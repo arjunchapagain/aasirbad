@@ -19,9 +19,7 @@ services:
       - key: DB_BACKEND
         value: postgresql
       - key: DATABASE_URL
-        fromDatabase:
-          name: aasirbad-db
-          property: connectionString
+        sync: false  # Set manually in Render dashboard — paste your Neon connection string
       - key: REDIS_URL
         fromService:
           type: redis
@@ -75,9 +73,5 @@ services:
     maxmemoryPolicy: noeviction
     ipAllowList: []
 
-databases:
-  - name: aasirbad-db
-    databaseName: aasirbad
-    user: aasirbad
-    plan: free
-    region: oregon
+# Database hosted on Neon (free, always-on PostgreSQL)
+# Set DATABASE_URL in Render dashboard Environment tab

@@ -20,10 +20,12 @@ settings = get_settings()
 _engine_kwargs: dict = {"echo": settings.debug and settings.app_env == "development"}
 if settings.db_backend == "postgresql":
     _engine_kwargs.update(
-        pool_size=5,
-        max_overflow=10,
+        pool_size=3,
+        max_overflow=5,
         pool_pre_ping=True,
-        pool_recycle=1800,
+        pool_recycle=300,
+        pool_timeout=30,
+        connect_args={"server_settings": {"application_name": "aasirbad"}},
     )
 
 engine = create_async_engine(settings.database_url, **_engine_kwargs)

@@ -52,14 +52,19 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         if self.db_backend == "sqlite":
             return "sqlite+aiosqlite:///./aasirbad.db"
-        # Prefer explicit DATABASE_URL from platform (Render, Railway, etc.)
+        # Prefer explicit DATABASE_URL from platform (Render, Neon, Railway, etc.)
         if self.database_url_env:
             url = self.database_url_env
-            # Render gives postgres:// but asyncpg needs postgresql+asyncpg://
+            # Platforms give postgres:// but asyncpg needs postgresql+asyncpg://
             if url.startswith("postgres://"):
                 url = url.replace("postgres://", "postgresql+asyncpg://", 1)
-            elif url.startswith("postgresql://"):
+            elif url.startswith("postgresql://") and "+asyncpg" not in url:
                 url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            # Ensure SSL for cloud databases (Neon, Supabase, etc.)
+            is_cloud = "neon" in url or "supabase" in url or self.app_env == "production"
+            if "sslmode" not in url and is_cloud:
+                sep = "&" if "?" in url else "?"
+                url = f"{url}{sep}ssl=require"
             return url
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
@@ -73,10 +78,16 @@ class Settings(BaseSettings):
             return "sqlite:///./aasirbad.db"
         if self.database_url_env:
             url = self.database_url_env
-            # Ensure sync driver
+            # Ensure sync driver for Alembic
             if url.startswith("postgres://"):
                 url = url.replace("postgres://", "postgresql://", 1)
-            return url.replace("postgresql+asyncpg://", "postgresql://")
+            url = url.replace("postgresql+asyncpg://", "postgresql://")
+            # Ensure SSL for cloud databases
+            is_cloud = "neon" in url or "supabase" in url or self.app_env == "production"
+            if "sslmode" not in url and is_cloud:
+                sep = "&" if "?" in url else "?"
+                url = f"{url}{sep}sslmode=require"
+            return url
         return (
             f"postgresql://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
