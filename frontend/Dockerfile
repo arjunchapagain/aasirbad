@@ -1,5 +1,5 @@
 # ============================================================
-# VoiceForge Frontend Dockerfile
+# Aasirbad Frontend Dockerfile
 # Multi-stage build with Next.js standalone output
 # ============================================================
 

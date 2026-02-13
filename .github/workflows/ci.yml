@@ -68,5 +68,5 @@ jobs:
 
       - name: Build
         env:
-          NEXT_PUBLIC_API_URL: https://voiceforge-api.onrender.com/api/v1
+          NEXT_PUBLIC_API_URL: https://aasirbad-api.onrender.com/api/v1
         run: npm run build

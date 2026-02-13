@@ -46,8 +46,8 @@ def create_access_token(
         "type": "access",
         "iat": datetime.now(timezone.utc),
         "jti": secrets.token_hex(16),
-        "iss": "voiceforge",
-        "aud": "voiceforge:api",
+        "iss": "aasirbad",
+        "aud": "aasirbad:api",
     }
     return jwt.encode(payload, _ACCESS_KEY, algorithm=settings.jwt_algorithm)
 
@@ -61,8 +61,8 @@ def create_refresh_token(user_id: uuid.UUID) -> str:
         "type": "refresh",
         "iat": datetime.now(timezone.utc),
         "jti": secrets.token_hex(16),
-        "iss": "voiceforge",
-        "aud": "voiceforge:refresh",
+        "iss": "aasirbad",
+        "aud": "aasirbad:refresh",
     }
     return jwt.encode(payload, _REFRESH_KEY, algorithm=settings.jwt_algorithm)
 
@@ -74,8 +74,8 @@ def decode_access_token(token: str) -> dict | None:
             token,
             _ACCESS_KEY,
             algorithms=[settings.jwt_algorithm],
-            audience="voiceforge:api",
-            issuer="voiceforge",
+            audience="aasirbad:api",
+            issuer="aasirbad",
         )
         return payload
     except JWTError as e:
@@ -90,8 +90,8 @@ def decode_refresh_token(token: str) -> dict | None:
             token,
             _REFRESH_KEY,
             algorithms=[settings.jwt_algorithm],
-            audience="voiceforge:refresh",
-            issuer="voiceforge",
+            audience="aasirbad:refresh",
+            issuer="aasirbad",
         )
         return payload
     except JWTError as e:

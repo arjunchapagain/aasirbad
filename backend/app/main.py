@@ -51,7 +51,7 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events."""
     # Startup
-    logger.info("Starting VoiceForge API", env=settings.app_env)
+    logger.info("Starting Aasirbad API", env=settings.app_env)
 
     # Refuse to start in production with default secrets
     if settings.app_env == "production":
@@ -87,11 +87,11 @@ async def lifespan(app: FastAPI):
 # ── Create Application ───────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="VoiceForge API",
+    title="Aasirbad API",
     description=(
-        "Professional voice cloning platform. "
+        "Preserve your family's voice forever. "
         "Record voice samples, train custom voice models, "
-        "and generate speech in any cloned voice."
+        "and generate speech in your loved one's voice."
     ),
     version="1.0.0",
     docs_url="/docs" if settings.debug else None,
@@ -187,7 +187,7 @@ app.add_middleware(
 if settings.app_env == "production":
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*.voiceforge.app", "voiceforge.app", "*.onrender.com"],
+        allowed_hosts=["*.onrender.com", "*.aasirbad.com", "aasirbad.com"],
     )
 
 

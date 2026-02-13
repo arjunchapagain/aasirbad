@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     )
 
     # ── Application ──────────────────────────────────────────────────────────
-    app_name: str = "VoiceForge"
+    app_name: str = "Aasirbad"
     app_env: Literal["development", "staging", "production"] = "development"
     debug: bool = True
     secret_key: str = "change-me-in-production"
@@ -126,8 +126,8 @@ class Settings(BaseSettings):
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
     aws_region: str = "us-east-1"
-    s3_bucket_name: str = "voiceforge-audio"
-    s3_model_bucket: str = "voiceforge-models"
+    s3_bucket_name: str = "aasirbad-audio"
+    s3_model_bucket: str = "aasirbad-models"
 
     # ── JWT Auth ─────────────────────────────────────────────────────────────
     jwt_secret_key: str = "jwt-secret-change-in-production"
@@ -151,7 +151,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    from_email: str = "noreply@voiceforge.app"
+    from_email: str = "noreply@aasirbad.com"
 
     # ── Monitoring ───────────────────────────────────────────────────────────
     sentry_dsn: str = ""

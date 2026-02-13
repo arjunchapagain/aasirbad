@@ -1,5 +1,5 @@
 # ============================================================
-# VoiceForge Backend Dockerfile
+# Aasirbad Backend Dockerfile
 # Multi-stage build for production optimization
 # ============================================================
 
@@ -40,10 +40,10 @@ COPY alembic/ ./alembic/
 COPY alembic.ini ./
 
 # Create non-root user
-RUN groupadd -r voiceforge && useradd -r -g voiceforge voiceforge
-RUN mkdir -p /app/models /app/uploads /app/storage && chown -R voiceforge:voiceforge /app
+RUN groupadd -r aasirbad && useradd -r -g aasirbad aasirbad
+RUN mkdir -p /app/models /app/uploads /app/storage && chown -R aasirbad:aasirbad /app
 
-USER voiceforge
+USER aasirbad
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

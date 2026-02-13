@@ -1,7 +1,7 @@
 # ============================================================
-# VoiceForge - Docker Compose
+# Aasirbad - Docker Compose
 # Full stack: API, Worker, Frontend, PostgreSQL, Redis
-# ============================================================
+# =============================================================
 
 version: '3.9'
 
@@ -9,17 +9,17 @@ services:
   # ── PostgreSQL Database ──────────────────────────────────
   postgres:
     image: postgres:16-alpine
-    container_name: voiceforge-db
+    container_name: aasirbad-db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-voiceforge}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-voiceforge_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-voiceforge}
+      POSTGRES_USER: ${POSTGRES_USER:-aasirbad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aasirbad_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-aasirbad}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U voiceforge"]
+      test: ["CMD-SHELL", "pg_isready -U aasirbad"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,7 +28,7 @@ services:
   # ── Redis ────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: voiceforge-redis
+    container_name: aasirbad-redis
     ports:
       - "6379:6379"
     volumes:
@@ -46,16 +46,16 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: voiceforge-api
+    container_name: aasirbad-api
     environment:
       - APP_ENV=${APP_ENV:-development}
       - DEBUG=${DEBUG:-true}
       - DB_BACKEND=postgresql
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_USER=voiceforge
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-voiceforge_secret}
-      - POSTGRES_DB=voiceforge
+      - POSTGRES_USER=aasirbad
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-aasirbad_secret}
+      - POSTGRES_DB=aasirbad
       - REDIS_HOST=redis
       - STORAGE_BACKEND=${STORAGE_BACKEND:-local}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000}
@@ -79,7 +79,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: voiceforge-worker-cpu
+    container_name: aasirbad-worker-cpu
     environment:
       - APP_ENV=development
       - POSTGRES_HOST=postgres
@@ -104,7 +104,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.worker
-    container_name: voiceforge-worker-gpu
+    container_name: aasirbad-worker-gpu
     environment:
       - APP_ENV=development
       - POSTGRES_HOST=postgres
@@ -133,7 +133,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: voiceforge-frontend
+    container_name: aasirbad-frontend
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
       - NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
@@ -148,7 +148,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: voiceforge-flower
+    container_name: aasirbad-flower
     environment:
       - REDIS_HOST=redis
     env_file:
