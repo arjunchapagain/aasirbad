@@ -1,0 +1,78 @@
+services:
+  # Backend API
+  - type: web
+    name: voiceforge-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: cd backend && pip install -e .
+    startCommand: cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: false
+      - key: PYTHON_VERSION
+        value: 3.11.4
+      - key: DB_BACKEND
+        value: postgresql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: voiceforge-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: voiceforge-redis
+          property: connectionString
+      - key: STORAGE_BACKEND
+        value: local
+      - key: LOCAL_STORAGE_DIR
+        value: /opt/render/project/src/backend/storage
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 60
+      - key: JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        value: 7
+      - key: TORCH_DEVICE
+        value: cpu
+      - key: MIN_RECORDINGS_FOR_TRAINING
+        value: 5
+      - key: AUDIO_SAMPLE_RATE
+        value: 22050
+      - key: LOG_LEVEL
+        value: INFO
+      - key: BACKEND_CORS_ORIGINS
+        value: "*"
+
+  # Frontend
+  - type: web
+    name: voiceforge-frontend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://voiceforge-api.onrender.com/api/v1
+      - key: NEXT_PUBLIC_WS_URL
+        value: wss://voiceforge-api.onrender.com/ws
+      - key: NODE_VERSION
+        value: 18
+
+databases:
+  - name: voiceforge-db
+    databaseName: voiceforge
+    user: voiceforge
+    plan: free
+    region: oregon
+
+  - name: voiceforge-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: noeviction
