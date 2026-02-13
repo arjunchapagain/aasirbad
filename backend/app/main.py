@@ -61,13 +61,16 @@ async def lifespan(_app: FastAPI):
             raise RuntimeError("JWT_SECRET_KEY must be set in production")
 
     # Wait for database to be available (handles Render provisioning delay)
-    db_ready = await wait_for_db(retries=10, delay=3.0)
+    db_ready = await wait_for_db(retries=20, delay=5.0)
     if not db_ready:
         logger.error("Could not connect to database — starting anyway")
 
-    if settings.app_env == "development":
-        await init_db()
-        logger.info("Database tables created (development mode)")
+    if settings.app_env == "development" and db_ready:
+        try:
+            await init_db()
+            logger.info("Database tables created (development mode)")
+        except Exception as exc:
+            logger.error("Failed to create tables (non-fatal)", error=str(exc))
 
     # Sentry integration
     if settings.sentry_dsn:
@@ -85,7 +88,7 @@ async def lifespan(_app: FastAPI):
     yield
 
     # Shutdown
-    logger.info("Shutting down VoiceForge API")
+    logger.info("Shutting down Aasirbad API")
     await close_db()
 
 
