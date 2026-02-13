@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.router import router as api_router
 from app.config import get_settings
-from app.database import close_db, init_db
+from app.database import close_db, init_db, wait_for_db
 from app.utils.security import decode_access_token
 
 settings = get_settings()
@@ -59,6 +59,11 @@ async def lifespan(_app: FastAPI):
             raise RuntimeError("SECRET_KEY must be set in production")
         if settings.jwt_secret_key in ("jwt-secret-change-in-production", ""):
             raise RuntimeError("JWT_SECRET_KEY must be set in production")
+
+    # Wait for database to be available (handles Render provisioning delay)
+    db_ready = await wait_for_db(retries=10, delay=3.0)
+    if not db_ready:
+        logger.error("Could not connect to database — starting anyway")
 
     if settings.app_env == "development":
         await init_db()

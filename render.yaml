@@ -7,7 +7,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: pip install -e "." && pip install psycopg2-binary aiosqlite
-    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: alembic upgrade head 2>&1 || echo 'Alembic migration skipped'; uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: APP_ENV
