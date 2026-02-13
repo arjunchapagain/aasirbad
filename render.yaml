@@ -2,11 +2,12 @@ services:
   # Backend API
   - type: web
     name: voiceforge-api
-    runtime: python
+    env: python
     region: oregon
     plan: free
-    buildCommand: cd backend && pip install -e .
-    startCommand: cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
+    buildCommand: pip install -e .
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: APP_ENV
@@ -52,11 +53,12 @@ services:
   # Frontend
   - type: web
     name: voiceforge-frontend
-    runtime: node
+    env: node
     region: oregon
     plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    startCommand: cd frontend && npm start
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
         value: https://voiceforge-api.onrender.com/api/v1
