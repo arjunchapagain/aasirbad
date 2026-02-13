@@ -23,18 +23,24 @@ def event_loop():
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator:
-    """Provide a test database session. Requires PostgreSQL to be running."""
+    """Provide a test database session using in-memory SQLite."""
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+    from sqlalchemy.pool import StaticPool
 
-    from app.config import get_settings
+    import app.models.recording  # noqa: F401
+
+    # Import all models so Base.metadata knows about them
+    import app.models.user  # noqa: F401
+    import app.models.voice_profile  # noqa: F401
     from app.database import Base
 
-    settings = get_settings()
-    test_database_url = settings.database_url.replace(
-        "/aasirbad", "/aasirbad_test",
+    # Use in-memory SQLite with StaticPool so all connections share the same DB
+    engine = create_async_engine(
+        "sqlite+aiosqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=False,
     )
-
-    engine = create_async_engine(test_database_url, echo=False)
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

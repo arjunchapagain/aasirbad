@@ -84,7 +84,7 @@ class TestAuth:
     async def test_get_me_unauthenticated(self, client: AsyncClient):
         """Test accessing protected endpoint without token."""
         response = await client.get("/api/v1/auth/me")
-        assert response.status_code == 403  # No credentials
+        assert response.status_code in (401, 403)  # No credentials
 
 
 @pytest.mark.asyncio

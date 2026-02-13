@@ -6,7 +6,8 @@ from datetime import timedelta
 from app.utils.security import (
     create_access_token,
     create_refresh_token,
-    decode_token,
+    decode_access_token,
+    decode_refresh_token,
     generate_recording_token,
     hash_password,
     verify_password,
@@ -42,7 +43,7 @@ class TestJWTTokens:
         """Test creating and decoding an access token."""
         user_id = uuid.uuid4()
         token = create_access_token(user_id)
-        payload = decode_token(token)
+        payload = decode_access_token(token)
         assert payload is not None
         assert payload["sub"] == str(user_id)
         assert payload["type"] == "access"
@@ -51,14 +52,14 @@ class TestJWTTokens:
         """Test creating and decoding a refresh token."""
         user_id = uuid.uuid4()
         token = create_refresh_token(user_id)
-        payload = decode_token(token)
+        payload = decode_refresh_token(token)
         assert payload is not None
         assert payload["sub"] == str(user_id)
         assert payload["type"] == "refresh"
 
     def test_invalid_token(self):
         """Test that an invalid token returns None."""
-        payload = decode_token("invalid.jwt.token")
+        payload = decode_access_token("invalid.jwt.token")
         assert payload is None
 
     def test_custom_expiry(self):
@@ -68,7 +69,7 @@ class TestJWTTokens:
             user_id,
             expires_delta=timedelta(hours=1),
         )
-        payload = decode_token(token)
+        payload = decode_access_token(token)
         assert payload is not None
         assert payload["sub"] == str(user_id)
 
