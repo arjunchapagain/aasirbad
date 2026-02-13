@@ -5,9 +5,6 @@ Supports local filesystem storage (for development) and AWS S3 (for production).
 The backend is selected via the STORAGE_BACKEND env var.
 """
 
-import io
-import os
-import shutil
 import uuid
 from pathlib import Path
 
@@ -21,7 +18,13 @@ settings = get_settings()
 class StorageService:
     """Base storage interface."""
 
-    def upload_audio(self, file_bytes: bytes, voice_profile_id: str, filename: str, content_type: str = "audio/wav") -> str:
+    def upload_audio(
+        self,
+        file_bytes: bytes,
+        voice_profile_id: str,
+        filename: str,
+        content_type: str = "audio/wav",
+    ) -> str:
         raise NotImplementedError
 
     def upload_processed_audio(self, file_bytes: bytes, voice_profile_id: str) -> str:
@@ -67,7 +70,13 @@ class LocalStorageService(StorageService):
         dest.write_bytes(data)
         return rel_key
 
-    def upload_audio(self, file_bytes: bytes, voice_profile_id: str, filename: str, content_type: str = "audio/wav") -> str:
+    def upload_audio(
+        self,
+        file_bytes: bytes,
+        voice_profile_id: str,
+        filename: str,
+        content_type: str = "audio/wav",  # noqa: ARG002
+    ) -> str:
         ext = Path(filename).suffix or ".wav"
         key = f"recordings/{voice_profile_id}/{uuid.uuid4().hex}{ext}"
         return self._write(key, file_bytes)
@@ -90,7 +99,12 @@ class LocalStorageService(StorageService):
     def download_model(self, key: str) -> bytes:
         return self.download_file(key, bucket="models")
 
-    def get_presigned_url(self, key: str, bucket: str | None = None, expires_in: int = 3600) -> str:
+    def get_presigned_url(
+        self,
+        key: str,
+        bucket: str | None = None,  # noqa: ARG002
+        expires_in: int = 3600,  # noqa: ARG002
+    ) -> str:
         # For local dev, return a URL that the FastAPI static file endpoint serves
         return f"/api/v1/files/{key}"
 
@@ -131,24 +145,45 @@ class S3StorageService(StorageService):
             ),
         )
 
-    def upload_audio(self, file_bytes: bytes, voice_profile_id: str, filename: str, content_type: str = "audio/wav") -> str:
+    def upload_audio(
+        self,
+        file_bytes: bytes,
+        voice_profile_id: str,
+        filename: str,
+        content_type: str = "audio/wav",
+    ) -> str:
         ext = Path(filename).suffix or ".wav"
         key = f"recordings/{voice_profile_id}/{uuid.uuid4().hex}{ext}"
         self._client.put_object(
-            Bucket=settings.s3_bucket_name, Key=key, Body=file_bytes,
+            Bucket=settings.s3_bucket_name,
+            Key=key,
+            Body=file_bytes,
             ContentType=content_type,
-            Metadata={"voice_profile_id": voice_profile_id, "original_filename": filename},
+            Metadata={
+                "voice_profile_id": voice_profile_id,
+                "original_filename": filename,
+            },
         )
         return key
 
     def upload_processed_audio(self, file_bytes: bytes, voice_profile_id: str) -> str:
         key = f"processed/{voice_profile_id}/{uuid.uuid4().hex}.wav"
-        self._client.put_object(Bucket=settings.s3_bucket_name, Key=key, Body=file_bytes, ContentType="audio/wav")
+        self._client.put_object(
+            Bucket=settings.s3_bucket_name,
+            Key=key,
+            Body=file_bytes,
+            ContentType="audio/wav",
+        )
         return key
 
     def upload_model(self, model_bytes: bytes, voice_profile_id: str) -> str:
         key = f"models/{voice_profile_id}/voice_model.pth"
-        self._client.put_object(Bucket=settings.s3_model_bucket, Key=key, Body=model_bytes, ContentType="application/octet-stream")
+        self._client.put_object(
+            Bucket=settings.s3_model_bucket,
+            Key=key,
+            Body=model_bytes,
+            ContentType="application/octet-stream",
+        )
         return key
 
     def download_file(self, key: str, bucket: str | None = None) -> bytes:
@@ -159,9 +194,18 @@ class S3StorageService(StorageService):
     def download_model(self, key: str) -> bytes:
         return self.download_file(key, bucket=settings.s3_model_bucket)
 
-    def get_presigned_url(self, key: str, bucket: str | None = None, expires_in: int = 3600) -> str:
+    def get_presigned_url(
+        self,
+        key: str,
+        bucket: str | None = None,
+        expires_in: int = 3600,
+    ) -> str:
         bucket = bucket or settings.s3_bucket_name
-        return self._client.generate_presigned_url("get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=expires_in)
+        return self._client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket, "Key": key},
+            ExpiresIn=expires_in,
+        )
 
     def delete_file(self, key: str, bucket: str | None = None) -> None:
         bucket = bucket or settings.s3_bucket_name
@@ -197,8 +241,8 @@ def get_storage_service() -> StorageService:
             except ImportError:
                 raise RuntimeError(
                     "boto3 is required for S3 storage. "
-                    "Install it with: pip install 'voiceforge[s3]'"
-                )
+                    "Install it with: pip install 'aasirbad[s3]'",
+                ) from None
             _storage_service = S3StorageService()
         else:
             _storage_service = LocalStorageService()

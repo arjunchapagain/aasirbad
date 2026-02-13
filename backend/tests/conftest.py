@@ -25,13 +25,16 @@ def event_loop():
 async def db_session() -> AsyncGenerator:
     """Provide a test database session. Requires PostgreSQL to be running."""
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
     from app.config import get_settings
     from app.database import Base
 
     settings = get_settings()
-    TEST_DATABASE_URL = settings.database_url.replace("/voiceforge", "/voiceforge_test")
+    test_database_url = settings.database_url.replace(
+        "/aasirbad", "/aasirbad_test",
+    )
 
-    engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+    engine = create_async_engine(test_database_url, echo=False)
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

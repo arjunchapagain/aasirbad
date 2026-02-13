@@ -5,13 +5,10 @@ Handles text-to-speech generation using trained voice models.
 """
 
 import uuid
-import tempfile
-from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.models.voice_profile import ProfileStatus, VoiceProfile
 from app.services.storage_service import get_storage_service
 from app.services.voice_service import VoiceService
 from app.utils.audio import audio_to_wav_bytes
@@ -36,13 +33,13 @@ class SynthesisService:
     ) -> dict:
         """
         Synthesize speech from text using a trained voice model.
-        
+
         Args:
             text: Text to convert to speech
             voice_profile_id: ID of the trained voice profile
             user_id: ID of the requesting user
             preset: Tortoise TTS quality preset
-            
+
         Returns:
             dict with audio_url, duration_seconds, etc.
         """

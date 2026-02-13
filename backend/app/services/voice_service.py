@@ -57,7 +57,7 @@ class VoiceService:
             select(VoiceProfile).where(
                 VoiceProfile.id == profile_id,
                 VoiceProfile.user_id == user_id,
-            )
+            ),
         )
         return result.scalar_one_or_none()
 
@@ -66,7 +66,7 @@ class VoiceService:
         result = await self.db.execute(
             select(VoiceProfile)
             .where(VoiceProfile.recording_token == token)
-            .options(selectinload(VoiceProfile.recordings))
+            .options(selectinload(VoiceProfile.recordings)),
         )
         return result.scalar_one_or_none()
 
@@ -81,7 +81,7 @@ class VoiceService:
         from sqlalchemy import func
 
         count_result = await self.db.execute(
-            select(func.count(VoiceProfile.id)).where(VoiceProfile.user_id == user_id)
+            select(func.count(VoiceProfile.id)).where(VoiceProfile.user_id == user_id),
         )
         total = count_result.scalar_one()
 
@@ -92,7 +92,7 @@ class VoiceService:
             .where(VoiceProfile.user_id == user_id)
             .order_by(VoiceProfile.created_at.desc())
             .offset(offset)
-            .limit(page_size)
+            .limit(page_size),
         )
         profiles = list(result.scalars().all())
 
@@ -121,7 +121,7 @@ class VoiceService:
     ) -> VoiceProfile | None:
         """Update training status of a voice profile (called by worker)."""
         result = await self.db.execute(
-            select(VoiceProfile).where(VoiceProfile.id == profile_id)
+            select(VoiceProfile).where(VoiceProfile.id == profile_id),
         )
         profile = result.scalar_one_or_none()
         if not profile:
@@ -156,7 +156,7 @@ class VoiceService:
                 VoiceProfile.id == profile_id,
                 VoiceProfile.user_id == user_id,
                 VoiceProfile.status == ProfileStatus.READY,
-            )
+            ),
         )
         return result.scalar_one_or_none()
 

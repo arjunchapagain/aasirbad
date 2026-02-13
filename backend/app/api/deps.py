@@ -50,7 +50,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Malformed token",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from None
 
     auth_service = AuthService(db)
     user = await auth_service.get_user_by_id(user_id)

@@ -30,10 +30,9 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     """Register a new user account."""
     auth_service = AuthService(db)
     try:
-        user = await auth_service.register(user_data)
-        return user
+        return await auth_service.register(user_data)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
 
 
 @router.post("/login", response_model=TokenResponse)

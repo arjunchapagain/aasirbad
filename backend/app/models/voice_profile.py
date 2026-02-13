@@ -28,20 +28,20 @@ class VoiceProfile(Base):
     __tablename__ = "voice_profiles"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, primary_key=True, default=uuid.uuid4
+        Uuid, primary_key=True, default=uuid.uuid4,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True,
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[ProfileStatus] = mapped_column(
-        Enum(ProfileStatus), default=ProfileStatus.PENDING, nullable=False
+        Enum(ProfileStatus), default=ProfileStatus.PENDING, nullable=False,
     )
 
     # Recording link token (unique, used to generate sharable recording URL)
     recording_token: Mapped[str] = mapped_column(
-        String(64), unique=True, index=True, nullable=False
+        String(64), unique=True, index=True, nullable=False,
     )
 
     # Training metadata
@@ -49,10 +49,10 @@ class VoiceProfile(Base):
     total_duration_seconds: Mapped[float] = mapped_column(Float, default=0.0)
     model_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
     training_started_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        DateTime(timezone=True), nullable=True,
     )
     training_completed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        DateTime(timezone=True), nullable=True,
     )
     training_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     training_progress: Mapped[float] = mapped_column(Float, default=0.0)
@@ -61,16 +61,16 @@ class VoiceProfile(Base):
     voice_similarity_score: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(timezone=True), server_default=func.now(),
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(),
     )
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="voice_profiles")  # noqa: F821
     recordings: Mapped[list["Recording"]] = relationship(  # noqa: F821
-        "Recording", back_populates="voice_profile", cascade="all, delete-orphan"
+        "Recording", back_populates="voice_profile", cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:

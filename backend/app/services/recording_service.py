@@ -25,12 +25,30 @@ settings = get_settings()
 # Free-form recording — no scripts. Speakers record in Nepali naturally.
 # Tips shown to guide the speaker on how to record well.
 RECORDING_TIPS = [
-    {"text_ne": "शान्त ठाउँमा रेकर्ड गर्नुहोस्", "text_en": "Record in a quiet place"},
-    {"text_ne": "माइक्रोफोनलाई मुखको नजिक राख्नुहोस्", "text_en": "Keep the microphone close to your mouth"},
-    {"text_ne": "स्पष्ट र प्राकृतिक रूपमा बोल्नुहोस्", "text_en": "Speak clearly and naturally"},
-    {"text_ne": "प्रत्येक रेकर्डिङ ३ देखि ३० सेकेन्ड लामो हुनुपर्छ", "text_en": "Each recording should be 3-30 seconds long"},
-    {"text_ne": "विभिन्न विषयमा बोल्नुहोस् — कथा, समाचार, आफ्नो बारेमा", "text_en": "Talk about different topics — stories, news, about yourself"},
-    {"text_ne": "खुसी, दुखी, गम्भीर — विभिन्न भावनामा बोल्नुहोस्", "text_en": "Speak in different emotions — happy, sad, serious"},
+    {
+        "text_ne": "शान्त ठाउँमा रेकर्ड गर्नुहोस्",
+        "text_en": "Record in a quiet place",
+    },
+    {
+        "text_ne": "माइक्रोफोनलाई मुखको नजिक राख्नुहोस्",
+        "text_en": "Keep the microphone close to your mouth",
+    },
+    {
+        "text_ne": "स्पष्ट र प्राकृतिक रूपमा बोल्नुहोस्",
+        "text_en": "Speak clearly and naturally",
+    },
+    {
+        "text_ne": "प्रत्येक रेकर्डिङ ३ देखि ३० सेकेन्ड लामो हुनुपर्छ",
+        "text_en": "Each recording should be 3-30 seconds long",
+    },
+    {
+        "text_ne": "विभिन्न विषयमा बोल्नुहोस् — कथा, समाचार, आफ्नो बारेमा",
+        "text_en": "Talk about different topics — stories, news, about yourself",
+    },
+    {
+        "text_ne": "खुसी, दुखी, गम्भीर — विभिन्न भावनामा बोल्नुहोस्",
+        "text_en": "Speak in different emotions — happy, sad, serious",
+    },
 ]
 
 # Suggestions for what to talk about (optional, shown as ideas)
@@ -79,7 +97,7 @@ class RecordingService:
     ) -> Recording:
         """
         Upload and process a new recording.
-        
+
         1. Validate audio format
         2. Upload original to S3
         3. Compute quality metrics
@@ -111,7 +129,10 @@ class RecordingService:
 
         if quality["snr_db"] < QUALITY_THRESHOLDS["min_snr_db"]:
             status = RecordingStatus.REJECTED
-            rejection_reason = f"Low signal-to-noise ratio: {quality['snr_db']}dB (min: {QUALITY_THRESHOLDS['min_snr_db']}dB)"
+            rejection_reason = (
+                f"Low signal-to-noise ratio: {quality['snr_db']}dB "
+                f"(min: {QUALITY_THRESHOLDS['min_snr_db']}dB)"
+            )
 
         if quality["rms_level"] < QUALITY_THRESHOLDS["min_rms_level"]:
             status = RecordingStatus.REJECTED
@@ -156,7 +177,7 @@ class RecordingService:
         result = await self.db.execute(
             select(Recording)
             .where(Recording.voice_profile_id == voice_profile_id)
-            .order_by(Recording.prompt_index)
+            .order_by(Recording.prompt_index),
         )
         return list(result.scalars().all())
 
@@ -166,7 +187,7 @@ class RecordingService:
             select(func.count(Recording.id)).where(
                 Recording.voice_profile_id == voice_profile_id,
                 Recording.status.in_([RecordingStatus.UPLOADED, RecordingStatus.PROCESSED]),
-            )
+            ),
         )
         return result.scalar_one()
 
@@ -177,7 +198,7 @@ class RecordingService:
             select(func.count(Recording.id)).where(
                 Recording.voice_profile_id == voice_profile_id,
                 Recording.status != RecordingStatus.REJECTED,
-            )
+            ),
         )
         total_count = count_result.scalar_one()
 
@@ -186,13 +207,13 @@ class RecordingService:
             select(func.sum(Recording.duration_seconds)).where(
                 Recording.voice_profile_id == voice_profile_id,
                 Recording.status != RecordingStatus.REJECTED,
-            )
+            ),
         )
         total_duration = duration_result.scalar_one() or 0.0
 
         # Update profile
         result = await self.db.execute(
-            select(VoiceProfile).where(VoiceProfile.id == voice_profile_id)
+            select(VoiceProfile).where(VoiceProfile.id == voice_profile_id),
         )
         profile = result.scalar_one()
         profile.total_recordings = total_count

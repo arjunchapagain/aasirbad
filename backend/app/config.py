@@ -27,11 +27,11 @@ class Settings(BaseSettings):
     app_name: str = "Aasirbad"
     app_env: Literal["development", "staging", "production"] = "development"
     debug: bool = True
-    secret_key: str = "change-me-in-production"
+    secret_key: str = "change-me-in-production"  # noqa: S105
     api_version: str = "v1"
 
     # ── Server ───────────────────────────────────────────────────────────────
-    backend_host: str = "0.0.0.0"
+    backend_host: str = "0.0.0.0"  # noqa: S104
     backend_port: int = 8000
     backend_workers: int = 4
     backend_cors_origins: str = "http://localhost:3000"
@@ -40,9 +40,9 @@ class Settings(BaseSettings):
     db_backend: Literal["postgresql", "sqlite"] = "postgresql"
     postgres_host: str = "localhost"
     postgres_port: int = 5432
-    postgres_user: str = "voiceforge"
-    postgres_password: str = "voiceforge_secret"
-    postgres_db: str = "voiceforge"
+    postgres_user: str = "aasirbad"
+    postgres_password: str = "aasirbad_secret"  # noqa: S105
+    postgres_db: str = "aasirbad"
 
     # Direct URL overrides (used by Render / Railway / hosted platforms)
     database_url_env: str = Field("", alias="DATABASE_URL")
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         if self.db_backend == "sqlite":
-            return "sqlite+aiosqlite:///./voiceforge.db"
+            return "sqlite+aiosqlite:///./aasirbad.db"
         # Prefer explicit DATABASE_URL from platform (Render, Railway, etc.)
         if self.database_url_env:
             url = self.database_url_env
@@ -70,14 +70,13 @@ class Settings(BaseSettings):
     @property
     def database_url_sync(self) -> str:
         if self.db_backend == "sqlite":
-            return "sqlite:///./voiceforge.db"
+            return "sqlite:///./aasirbad.db"
         if self.database_url_env:
             url = self.database_url_env
             # Ensure sync driver
             if url.startswith("postgres://"):
                 url = url.replace("postgres://", "postgresql://", 1)
-            url = url.replace("postgresql+asyncpg://", "postgresql://")
-            return url
+            return url.replace("postgresql+asyncpg://", "postgresql://")
         return (
             f"postgresql://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
@@ -130,7 +129,7 @@ class Settings(BaseSettings):
     s3_model_bucket: str = "aasirbad-models"
 
     # ── JWT Auth ─────────────────────────────────────────────────────────────
-    jwt_secret_key: str = "jwt-secret-change-in-production"
+    jwt_secret_key: str = "jwt-secret-change-in-production"  # noqa: S105
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 7

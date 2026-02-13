@@ -36,7 +36,7 @@ structlog.configure(
         structlog.dev.ConsoleRenderer() if settings.debug else structlog.processors.JSONRenderer(),
     ],
     wrapper_class=structlog.make_filtering_bound_logger(
-        logging.getLevelName(settings.log_level)
+        logging.getLevelName(settings.log_level),
     ),
     context_class=dict,
     logger_factory=structlog.PrintLoggerFactory(),
@@ -48,7 +48,7 @@ logger = structlog.get_logger()
 # ── Application Lifecycle ────────────────────────────────────────────────────
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Application startup and shutdown events."""
     # Startup
     logger.info("Starting Aasirbad API", env=settings.app_env)
@@ -223,6 +223,7 @@ app.include_router(api_router, prefix="/api")
 
 if settings.storage_backend == "local":
     from pathlib import Path as _Path
+
     from fastapi.responses import FileResponse
 
     @app.get("/api/v1/files/{file_path:path}", tags=["Files"])

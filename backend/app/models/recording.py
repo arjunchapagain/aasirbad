@@ -26,7 +26,7 @@ class Recording(Base):
     __tablename__ = "recordings"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, primary_key=True, default=uuid.uuid4
+        Uuid, primary_key=True, default=uuid.uuid4,
     )
     voice_profile_id: Mapped[uuid.UUID] = mapped_column(
         Uuid,
@@ -39,7 +39,7 @@ class Recording(Base):
     prompt_text: Mapped[str] = mapped_column(Text, nullable=False)
     prompt_index: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[RecordingStatus] = mapped_column(
-        Enum(RecordingStatus), default=RecordingStatus.UPLOADED, nullable=False
+        Enum(RecordingStatus), default=RecordingStatus.UPLOADED, nullable=False,
     )
 
     # Audio file info
@@ -59,12 +59,12 @@ class Recording(Base):
     rejection_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(timezone=True), server_default=func.now(),
     )
 
     # Relationships
     voice_profile: Mapped["VoiceProfile"] = relationship(  # noqa: F821
-        "VoiceProfile", back_populates="recordings"
+        "VoiceProfile", back_populates="recordings",
     )
 
     def __repr__(self) -> str:

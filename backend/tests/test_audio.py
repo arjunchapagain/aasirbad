@@ -1,16 +1,14 @@
 """Tests for audio utility functions."""
 
-import io
 import struct
 
 import numpy as np
-import pytest
 
 from app.utils.audio import (
-    validate_audio_file,
     compute_audio_quality_metrics,
-    normalize_audio,
     load_audio_from_bytes,
+    normalize_audio,
+    validate_audio_file,
 )
 
 

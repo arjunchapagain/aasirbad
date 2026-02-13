@@ -35,7 +35,7 @@ class AuthService:
         """Register a new user."""
         # Check if email already exists
         result = await self.db.execute(
-            select(User).where(User.email == user_data.email)
+            select(User).where(User.email == user_data.email),
         )
         existing = result.scalar_one_or_none()
         if existing:

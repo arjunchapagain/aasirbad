@@ -76,7 +76,7 @@ async def upload_recording(
             filename=filename,
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     quality_metrics = None
     if recording.snr_db is not None:
@@ -117,5 +117,4 @@ async def list_recordings(
         raise HTTPException(status_code=404, detail="Voice profile not found")
 
     recording_service = RecordingService(db)
-    recordings = await recording_service.get_recordings(profile_id)
-    return recordings
+    return await recording_service.get_recordings(profile_id)

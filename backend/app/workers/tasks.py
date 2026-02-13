@@ -9,7 +9,6 @@ These tasks run asynchronously on worker nodes:
 import logging
 
 import redis as redis_client
-from celery import states
 
 from app.config import get_settings
 from app.workers.celery_app import celery_app
@@ -48,7 +47,7 @@ def _publish_progress(profile_id: str, progress: float, step: str, status: str =
 def preprocess_recordings(self, profile_id: str):
     """
     Preprocess all recordings for a voice profile.
-    
+
     1. Download original recordings from S3
     2. Run preprocessing pipeline (noise reduction, normalization, VAD)
     3. Upload processed audio to S3
@@ -58,7 +57,6 @@ def preprocess_recordings(self, profile_id: str):
     from sqlalchemy.orm import Session
 
     from app.models.recording import Recording, RecordingStatus
-    from app.models.voice_profile import ProfileStatus, VoiceProfile
     from app.services.storage_service import get_storage_service
     from app.voice_engine.preprocessor import AudioPreprocessor
 
@@ -75,7 +73,7 @@ def preprocess_recordings(self, profile_id: str):
             select(Recording).where(
                 Recording.voice_profile_id == profile_id,
                 Recording.status == RecordingStatus.UPLOADED,
-            )
+            ),
         ).scalars().all()
 
         total = len(recordings)
@@ -125,7 +123,7 @@ def preprocess_recordings(self, profile_id: str):
 def train_voice_model(self, profile_id: str):
     """
     Train a voice model (extract conditioning latents) for a profile.
-    
+
     Full pipeline:
     1. Preprocess recordings if needed
     2. Download all processed audio
@@ -150,7 +148,7 @@ def train_voice_model(self, profile_id: str):
         try:
             # Update profile status to training
             profile = db.execute(
-                select(VoiceProfile).where(VoiceProfile.id == profile_id)
+                select(VoiceProfile).where(VoiceProfile.id == profile_id),
             ).scalar_one()
 
             profile.status = ProfileStatus.TRAINING
@@ -169,13 +167,13 @@ def train_voice_model(self, profile_id: str):
                 select(Recording).where(
                     Recording.voice_profile_id == profile_id,
                     Recording.status == RecordingStatus.PROCESSED,
-                )
+                ),
             ).scalars().all()
 
             if len(recordings) < settings.min_recordings_for_training:
                 raise ValueError(
                     f"Not enough valid recordings: {len(recordings)} "
-                    f"(need {settings.min_recordings_for_training})"
+                    f"(need {settings.min_recordings_for_training})",
                 )
 
             audio_samples = []
@@ -216,7 +214,7 @@ def train_voice_model(self, profile_id: str):
             _publish_progress(profile_id, 0.98, "Finalizing")
 
             profile = db.execute(
-                select(VoiceProfile).where(VoiceProfile.id == profile_id)
+                select(VoiceProfile).where(VoiceProfile.id == profile_id),
             ).scalar_one()
 
             profile.status = ProfileStatus.READY
@@ -240,7 +238,7 @@ def train_voice_model(self, profile_id: str):
 
             # Update profile with error
             profile = db.execute(
-                select(VoiceProfile).where(VoiceProfile.id == profile_id)
+                select(VoiceProfile).where(VoiceProfile.id == profile_id),
             ).scalar_one()
 
             profile.status = ProfileStatus.FAILED

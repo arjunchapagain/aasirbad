@@ -35,7 +35,6 @@ async_session_factory = async_sessionmaker(
 class Base(DeclarativeBase):
     """Base class for all database models."""
 
-    pass
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

@@ -5,7 +5,6 @@ Generates speech from text using Tortoise TTS with trained voice conditioning la
 Supports multiple quality presets for speed/quality tradeoff.
 """
 
-import io
 import logging
 
 import numpy as np
@@ -45,7 +44,7 @@ QUALITY_PRESETS = {
 class VoiceSynthesizer:
     """
     Generates speech from text using a trained voice model.
-    
+
     Uses Tortoise TTS with conditioning latents extracted during training
     to produce speech that mimics the target speaker's voice.
     """
@@ -75,17 +74,20 @@ class VoiceSynthesizer:
     ) -> tuple[np.ndarray, int]:
         """
         Generate speech from text using a trained voice model.
-        
+
         Args:
             text: Text to convert to speech
             voice_model_bytes: Serialized voice conditioning latents
             preset: Quality preset (ultra_fast, fast, standard, high_quality)
-            
+
         Returns:
             Tuple of (audio_array, sample_rate)
         """
         if preset not in QUALITY_PRESETS:
-            raise ValueError(f"Unknown preset: {preset}. Choose from: {list(QUALITY_PRESETS.keys())}")
+            raise ValueError(
+                f"Unknown preset: {preset}. "
+                f"Choose from: {list(QUALITY_PRESETS.keys())}",
+            )
 
         logger.info(f"Generating speech: '{text[:50]}...' with preset={preset}")
 
@@ -100,7 +102,7 @@ class VoiceSynthesizer:
         speaker_embedding = speaker_embedding.to(self.device)
 
         # Get preset parameters
-        params = QUALITY_PRESETS[preset]
+        QUALITY_PRESETS[preset]
 
         # Generate speech
         with torch.no_grad():
@@ -133,7 +135,7 @@ class VoiceSynthesizer:
     ):
         """
         Generator that yields audio chunks for streaming playback.
-        
+
         Useful for real-time audio streaming over WebSocket.
         """
         audio, sr = self.generate_speech(text, voice_model_bytes, preset)

@@ -16,8 +16,8 @@ import logging
 from typing import NamedTuple
 
 import librosa
-import numpy as np
 import noisereduce as nr
+import numpy as np
 import soundfile as sf
 
 from app.config import get_settings
@@ -39,7 +39,7 @@ class ProcessedAudio(NamedTuple):
 class AudioPreprocessor:
     """
     Professional audio preprocessing pipeline for voice cloning.
-    
+
     Pipeline steps:
     1. Load and convert to mono
     2. Resample to target sample rate (22050 Hz for Tortoise)
@@ -64,10 +64,10 @@ class AudioPreprocessor:
     def process(self, audio_bytes: bytes) -> ProcessedAudio:
         """
         Run the full preprocessing pipeline on raw audio bytes.
-        
+
         Args:
             audio_bytes: Raw audio file bytes (WAV, MP3, etc.)
-            
+
         Returns:
             ProcessedAudio with cleaned audio and quality metrics
         """
@@ -134,14 +134,14 @@ class AudioPreprocessor:
     def _reduce_noise(self, audio: np.ndarray, sr: int) -> np.ndarray:
         """
         Apply spectral noise reduction.
-        
+
         Uses noisereduce library which implements spectral gating:
         1. Estimates noise profile from quietest segments
         2. Creates a spectral gate to reduce noise below threshold
         3. Applies smoothly to preserve speech quality
         """
         try:
-            reduced = nr.reduce_noise(
+            return nr.reduce_noise(
                 y=audio,
                 sr=sr,
                 prop_decrease=self.noise_reduction_strength,
@@ -149,7 +149,6 @@ class AudioPreprocessor:
                 n_fft=2048,
                 hop_length=512,
             )
-            return reduced
         except Exception as e:
             logger.warning(f"Noise reduction failed, using original audio: {e}")
             return audio
@@ -164,7 +163,7 @@ class AudioPreprocessor:
     ) -> np.ndarray:
         """
         Trim leading and trailing silence from audio.
-        
+
         Uses librosa's trim which is based on the signal being above
         a threshold in dB relative to the peak.
         """
@@ -183,9 +182,8 @@ class AudioPreprocessor:
 
         # Add small silence padding (50ms) at start and end for natural sound
         pad_samples = int(0.05 * sr)
-        padded = np.pad(trimmed, (pad_samples, pad_samples), mode="constant")
+        return np.pad(trimmed, (pad_samples, pad_samples), mode="constant")
 
-        return padded
 
     def to_wav_bytes(self, audio: np.ndarray, sr: int) -> bytes:
         """Convert processed audio to WAV bytes for storage."""

@@ -19,7 +19,6 @@ import logging
 import tempfile
 from pathlib import Path
 
-import numpy as np
 import torch
 import torchaudio
 
@@ -32,7 +31,7 @@ settings = get_settings()
 class VoiceTrainer:
     """
     Trains (extracts conditioning latents) a voice model from audio samples.
-    
+
     Tortoise TTS approach:
     - Load reference audio clips
     - Run through autoregressive encoder to get voice embeddings
@@ -64,11 +63,11 @@ class VoiceTrainer:
     ) -> bytes:
         """
         Extract voice conditioning latents from audio samples.
-        
+
         Args:
             audio_samples: List of preprocessed WAV audio bytes
             progress_callback: Optional callback(progress: float, step: str)
-            
+
         Returns:
             Serialized voice model (conditioning latents) as bytes
         """
@@ -135,7 +134,7 @@ class VoiceTrainer:
 
         logger.info(
             f"Voice training complete. Model size: {len(model_bytes) / 1024:.1f}KB, "
-            f"Used {len(audio_samples)} samples"
+            f"Used {len(audio_samples)} samples",
         )
 
         return model_bytes

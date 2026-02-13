@@ -44,8 +44,7 @@ async def create_voice_profile(
 ):
     """Create a new voice profile for cloning."""
     voice_service = VoiceService(db)
-    profile = await voice_service.create_profile(current_user.id, data)
-    return profile
+    return await voice_service.create_profile(current_user.id, data)
 
 
 @router.get("", response_model=VoiceProfileListResponse)

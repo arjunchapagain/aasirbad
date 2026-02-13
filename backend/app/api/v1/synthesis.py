@@ -24,7 +24,7 @@ async def generate_speech(
 ):
     """
     Generate speech from text using a trained voice model.
-    
+
     The voice profile must be in READY status (training completed).
     """
     synthesis_service = SynthesisService(db)
@@ -37,6 +37,6 @@ async def generate_speech(
             preset=request.preset,
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     return SynthesisResponse(**result)

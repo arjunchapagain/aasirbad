@@ -70,14 +70,13 @@ def create_refresh_token(user_id: uuid.UUID) -> str:
 def decode_access_token(token: str) -> dict | None:
     """Decode and validate a JWT access token. Returns payload or None."""
     try:
-        payload = jwt.decode(
+        return jwt.decode(
             token,
             _ACCESS_KEY,
             algorithms=[settings.jwt_algorithm],
             audience="aasirbad:api",
             issuer="aasirbad",
         )
-        return payload
     except JWTError as e:
         logger.warning("Access token validation failed: %s", e)
         return None
@@ -86,14 +85,13 @@ def decode_access_token(token: str) -> dict | None:
 def decode_refresh_token(token: str) -> dict | None:
     """Decode and validate a JWT refresh token. Returns payload or None."""
     try:
-        payload = jwt.decode(
+        return jwt.decode(
             token,
             _REFRESH_KEY,
             algorithms=[settings.jwt_algorithm],
             audience="aasirbad:refresh",
             issuer="aasirbad",
         )
-        return payload
     except JWTError as e:
         logger.warning("Refresh token validation failed: %s", e)
         return None

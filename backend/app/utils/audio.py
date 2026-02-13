@@ -6,7 +6,6 @@ librosa is used only if installed (optional ML extra).
 """
 
 import io
-import struct
 import tempfile
 from pathlib import Path
 
@@ -35,7 +34,13 @@ def validate_audio_file(file_bytes: bytes, filename: str) -> dict:
     ext = Path(filename).suffix.lower()
 
     if ext not in allowed_extensions:
-        return {"valid": False, "error": f"Unsupported audio format: {ext}. Allowed: {allowed_extensions}"}
+        return {
+            "valid": False,
+            "error": (
+                f"Unsupported audio format: {ext}. "
+                f"Allowed: {allowed_extensions}"
+            ),
+        }
 
     if len(file_bytes) < 1000:
         return {"valid": False, "error": "Audio file is too small - likely empty or corrupted"}
@@ -64,7 +69,13 @@ def validate_audio_file(file_bytes: bytes, filename: str) -> dict:
         return {"valid": False, "error": "Recording too short - minimum 1 second required"}
 
     if duration > settings.max_recording_duration_seconds:
-        return {"valid": False, "error": f"Recording too long - maximum {settings.max_recording_duration_seconds} seconds"}
+        return {
+            "valid": False,
+            "error": (
+                "Recording too long - maximum "
+                f"{settings.max_recording_duration_seconds} seconds"
+            ),
+        }
 
     return {
         "valid": True,
@@ -78,7 +89,7 @@ def validate_audio_file(file_bytes: bytes, filename: str) -> dict:
 def compute_audio_quality_metrics(audio: np.ndarray, sr: int) -> dict:
     """
     Compute quality metrics for an audio recording.
-    
+
     Returns:
         dict with snr_db, rms_level, clipping_detected, silence_ratio
     """
@@ -96,7 +107,13 @@ def compute_audio_quality_metrics(audio: np.ndarray, sr: int) -> dict:
     else:
         # Manual framing without librosa
         n_frames = 1 + (len(audio) - frame_length) // hop_length
-        frames = np.stack([audio[i * hop_length : i * hop_length + frame_length] for i in range(n_frames)], axis=1)
+        frames = np.stack(
+            [
+                audio[i * hop_length : i * hop_length + frame_length]
+                for i in range(n_frames)
+            ],
+            axis=1,
+        )
     frame_rms = np.sqrt(np.mean(frames**2, axis=0))
 
     sorted_rms = np.sort(frame_rms)
@@ -157,7 +174,10 @@ def audio_to_wav_bytes(audio: np.ndarray, sr: int) -> bytes:
     return buffer.read()
 
 
-def load_audio_from_bytes(file_bytes: bytes, target_sr: int | None = None) -> tuple[np.ndarray, int]:
+def load_audio_from_bytes(
+    file_bytes: bytes,
+    target_sr: int | None = None,
+) -> tuple[np.ndarray, int]:
     """Load audio from bytes, optionally resampling."""
     buffer = io.BytesIO(file_bytes)
     audio, sr = sf.read(buffer, dtype="float32")

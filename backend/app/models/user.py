@@ -15,7 +15,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, primary_key=True, default=uuid.uuid4
+        Uuid, primary_key=True, default=uuid.uuid4,
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -25,15 +25,15 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(timezone=True), server_default=func.now(),
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(),
     )
 
     # Relationships
     voice_profiles: Mapped[list["VoiceProfile"]] = relationship(  # noqa: F821
-        "VoiceProfile", back_populates="user", cascade="all, delete-orphan"
+        "VoiceProfile", back_populates="user", cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
