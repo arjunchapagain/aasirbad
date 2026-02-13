@@ -4,8 +4,8 @@
 
 :root {
   --foreground-rgb: 10, 10, 10;
-  --background-start-rgb: 250, 250, 252;
-  --background-end-rgb: 245, 245, 248;
+  --background-start-rgb: 255, 251, 235;
+  --background-end-rgb: 255, 247, 237;
 }
 
 body {

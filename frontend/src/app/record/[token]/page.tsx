@@ -138,11 +138,11 @@ export default function RecordPage() {
       <header className="bg-white border-b border-gray-100">
         <div className="max-w-2xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-                <Mic className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                <span className="text-white text-sm font-bold">ॐ</span>
               </div>
-              <span className="font-bold text-gray-900">VoiceForge</span>
+              <span className="font-bold text-gray-900">आसिर्बाद</span>
             </div>
             <div className="text-sm text-gray-600">
               <span className="font-medium text-gray-900">{session?.profile_name}</span>

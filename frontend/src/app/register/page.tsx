@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Mic, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { auth } from '@/lib/api';
 
@@ -41,14 +41,17 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
-              <Mic className="w-6 h-6 text-white" />
+          <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md shadow-amber-500/20">
+              <span className="text-white text-xl font-bold">ॐ</span>
             </div>
-            <span className="text-2xl font-bold text-gray-900">VoiceForge</span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-2xl font-bold text-gray-900">आसिर्बाद</span>
+              <span className="text-[10px] text-amber-700 font-medium -mt-0.5">AASIRBAD</span>
+            </div>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-600 mt-1">Start cloning voices in minutes</p>
+          <h1 className="text-2xl font-bold text-gray-900">खाता बनाउनुहोस्</h1>
+          <p className="text-gray-600 mt-1">परिवारको आवाज सुरक्षित राख्न सुरु गर्नुहोस्</p>
         </div>
 
         <form

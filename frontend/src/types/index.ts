@@ -1,5 +1,5 @@
 /**
- * TypeScript type definitions for VoiceForge.
+ * TypeScript type definitions for Aasirbad.
  */
 
 // ── User Types ──────────────────────────────────────────────────────────────

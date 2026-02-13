@@ -1,5 +1,5 @@
 /**
- * API client for VoiceForge backend.
+ * API client for Aasirbad backend.
  *
  * Features:
  * - Automatic token refresh on 401 (iOS-ready seamless re-auth)

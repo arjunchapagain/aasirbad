@@ -132,11 +132,11 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="border-b border-gray-100 bg-white/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-              <Mic className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+              <span className="text-white text-sm font-bold">ॐ</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">VoiceForge</span>
+            <span className="text-lg font-bold text-gray-900">आसिर्बाद</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">{user?.full_name}</span>

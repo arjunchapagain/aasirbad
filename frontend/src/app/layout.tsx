@@ -7,10 +7,10 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'VoiceForge - Professional Voice Cloning',
+  title: 'आसिर्बाद — परिवारको आवाज सुरक्षित राख्नुहोस्',
   description:
-    'Record your voice, train a custom voice model, and generate speech that sounds just like you.',
-  keywords: ['voice cloning', 'text to speech', 'AI voice', 'voice synthesis'],
+    'हजुरबुवा-हजुरआमाको कथा, आमाबुवाको आसिर्बाद — AI ले तपाईंको प्रियजनको आवाज जोगाएर राख्छ।',
+  keywords: ['voice cloning', 'nepali voice', 'AI voice', 'family voice', 'आसिर्बाद', 'नेपाली'],
 };
 
 export default function RootLayout({
