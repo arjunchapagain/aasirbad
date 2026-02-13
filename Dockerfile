@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files needed for building
-COPY pyproject.toml README.md ./
-COPY app/__init__.py ./app/__init__.py
+COPY backend/pyproject.toml backend/README.md ./
+COPY backend/app/__init__.py ./app/__init__.py
 RUN pip install --no-cache-dir --prefix=/install .
 
 # ── Stage 2: Runtime ─────────────────────────────────────────
@@ -35,9 +35,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /install /usr/local
 
 # Copy application code
-COPY app/ ./app/
-COPY alembic/ ./alembic/
-COPY alembic.ini ./
+COPY backend/app/ ./app/
+COPY backend/alembic/ ./alembic/
+COPY backend/alembic.ini ./
 
 # Create non-root user
 RUN groupadd -r voiceforge && useradd -r -g voiceforge voiceforge
