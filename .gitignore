@@ -43,6 +43,10 @@ Thumbs.db
 uploads/
 trained_models/
 
+# Local storage & SQLite
+storage/
+*.db
+
 # Docker
 docker-compose.override.yml
 

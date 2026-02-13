@@ -191,13 +191,15 @@ async def get_recording_session(
         )
 
     recording_service = RecordingService(db)
-    prompts = recording_service.get_prompts()
+    tips = recording_service.get_tips()
+    suggestions = recording_service.get_suggestions()
     completed = await recording_service.get_completed_count(profile.id)
 
     return RecordingSessionResponse(
         profile_name=profile.name,
-        prompts=prompts,
+        tips=tips,
+        suggestions=suggestions,
         completed_recordings=completed,
-        total_prompts=len(prompts),
+        max_recordings=settings.max_recordings_per_profile,
         min_required=settings.min_recordings_for_training,
     )

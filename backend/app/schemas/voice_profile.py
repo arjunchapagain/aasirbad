@@ -54,22 +54,28 @@ class RecordingLinkResponse(BaseModel):
     expires_at: datetime | None = None
 
 
-class RecordingPrompt(BaseModel):
-    """A text prompt for the user to read aloud."""
+class RecordingTip(BaseModel):
+    """A recording tip shown in Nepali."""
 
-    index: int
-    text: str
-    category: str  # e.g., "pangram", "emotion", "conversational"
-    estimated_duration_seconds: int
+    text_ne: str  # Nepali text
+    text_en: str  # English translation
+
+
+class RecordingSuggestion(BaseModel):
+    """An optional topic suggestion for free-form recording."""
+
+    text_ne: str
+    text_en: str
 
 
 class RecordingSessionResponse(BaseModel):
     """Response for a recording session (accessed via token)."""
 
     profile_name: str
-    prompts: list[RecordingPrompt]
+    tips: list[RecordingTip]
+    suggestions: list[RecordingSuggestion]
     completed_recordings: int
-    total_prompts: int
+    max_recordings: int
     min_required: int
 
 

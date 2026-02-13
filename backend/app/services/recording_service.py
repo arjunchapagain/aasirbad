@@ -22,128 +22,27 @@ from app.utils.audio import (
 settings = get_settings()
 
 
-# Well-curated prompts covering diverse phonemes, emotions, and speech patterns
-RECORDING_PROMPTS = [
-    {
-        "index": 0,
-        "text": "The quick brown fox jumps over the lazy dog near the riverbank.",
-        "category": "pangram",
-        "estimated_duration_seconds": 5,
-    },
-    {
-        "index": 1,
-        "text": "She sells seashells by the seashore, where the waves crash against the rocky cliffs.",
-        "category": "articulation",
-        "estimated_duration_seconds": 6,
-    },
-    {
-        "index": 2,
-        "text": "How vexingly quick daft zebras jump! A wizard's job is to vex chumps quickly in fog.",
-        "category": "pangram",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 3,
-        "text": "I woke up this morning feeling absolutely wonderful, like today is going to be the best day ever!",
-        "category": "emotion_happy",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 4,
-        "text": "Unfortunately, we regret to inform you that the project deadline has been moved up by two weeks.",
-        "category": "emotion_formal",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 5,
-        "text": "Wait, are you serious? That's incredible! I can't believe it actually worked!",
-        "category": "emotion_surprised",
-        "estimated_duration_seconds": 5,
-    },
-    {
-        "index": 6,
-        "text": "Let me explain the process step by step. First, you need to open the application. Then, navigate to settings.",
-        "category": "instructional",
-        "estimated_duration_seconds": 8,
-    },
-    {
-        "index": 7,
-        "text": "The total revenue for the third quarter was approximately fourteen point seven million dollars, representing a twelve percent increase.",
-        "category": "numbers",
-        "estimated_duration_seconds": 8,
-    },
-    {
-        "index": 8,
-        "text": "So basically, I was thinking we could, you know, maybe grab some coffee later and talk about the project?",
-        "category": "conversational",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 9,
-        "text": "In the quiet of the evening, the stars painted the sky with their ancient, unwavering light.",
-        "category": "narrative",
-        "estimated_duration_seconds": 6,
-    },
-    {
-        "index": 10,
-        "text": "Please confirm your email address at support at example dot com, and your reference number is A B C one two three four five.",
-        "category": "alphanumeric",
-        "estimated_duration_seconds": 8,
-    },
-    {
-        "index": 11,
-        "text": "I'm not angry, I'm just disappointed. We talked about this already, and I thought we had an understanding.",
-        "category": "emotion_serious",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 12,
-        "text": "Good morning everyone! Welcome to today's presentation. I'll be covering three main topics during our session.",
-        "category": "presentation",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 13,
-        "text": "The thunderstorm raged outside, lightning splitting the sky as rain hammered against the windows with relentless fury.",
-        "category": "dramatic",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 14,
-        "text": "Could you repeat that, please? I didn't quite catch what you said. Was it Thursday or Tuesday?",
-        "category": "question",
-        "estimated_duration_seconds": 6,
-    },
-    {
-        "index": 15,
-        "text": "Technology continues to reshape our world in ways we never imagined possible just a decade ago.",
-        "category": "neutral",
-        "estimated_duration_seconds": 6,
-    },
-    {
-        "index": 16,
-        "text": "Ha ha, that's the funniest thing I've heard all week! Oh man, you really got me with that one.",
-        "category": "emotion_laughing",
-        "estimated_duration_seconds": 6,
-    },
-    {
-        "index": 17,
-        "text": "Attention passengers: the next train to downtown will arrive at platform three in approximately five minutes.",
-        "category": "announcement",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 18,
-        "text": "I'd like to order a large cappuccino with oat milk, two blueberry muffins, and a sparkling water, please.",
-        "category": "everyday",
-        "estimated_duration_seconds": 7,
-    },
-    {
-        "index": 19,
-        "text": "To summarize, our findings suggest that continued investment in research and development is essential for long-term growth.",
-        "category": "conclusion",
-        "estimated_duration_seconds": 8,
-    },
+# Free-form recording — no scripts. Speakers record in Nepali naturally.
+# Tips shown to guide the speaker on how to record well.
+RECORDING_TIPS = [
+    {"text_ne": "शान्त ठाउँमा रेकर्ड गर्नुहोस्", "text_en": "Record in a quiet place"},
+    {"text_ne": "माइक्रोफोनलाई मुखको नजिक राख्नुहोस्", "text_en": "Keep the microphone close to your mouth"},
+    {"text_ne": "स्पष्ट र प्राकृतिक रूपमा बोल्नुहोस्", "text_en": "Speak clearly and naturally"},
+    {"text_ne": "प्रत्येक रेकर्डिङ ३ देखि ३० सेकेन्ड लामो हुनुपर्छ", "text_en": "Each recording should be 3-30 seconds long"},
+    {"text_ne": "विभिन्न विषयमा बोल्नुहोस् — कथा, समाचार, आफ्नो बारेमा", "text_en": "Talk about different topics — stories, news, about yourself"},
+    {"text_ne": "खुसी, दुखी, गम्भीर — विभिन्न भावनामा बोल्नुहोस्", "text_en": "Speak in different emotions — happy, sad, serious"},
+]
+
+# Suggestions for what to talk about (optional, shown as ideas)
+RECORDING_SUGGESTIONS = [
+    {"text_ne": "आफ्नो परिचय दिनुहोस्", "text_en": "Introduce yourself"},
+    {"text_ne": "आजको मौसम बारेमा बताउनुहोस्", "text_en": "Talk about today's weather"},
+    {"text_ne": "कुनै कथा सुनाउनुहोस्", "text_en": "Tell a story"},
+    {"text_ne": "आफ्नो मनपर्ने खानाको बारेमा बताउनुहोस्", "text_en": "Talk about your favourite food"},
+    {"text_ne": "आफ्नो परिवारको बारेमा बताउनुहोस्", "text_en": "Talk about your family"},
+    {"text_ne": "आफ्नो गाउँ वा शहरको बारेमा बताउनुहोस्", "text_en": "Talk about your village or city"},
+    {"text_ne": "कुनै समाचार बारेमा बोल्नुहोस्", "text_en": "Talk about some news"},
+    {"text_ne": "दैनिक जीवनको बारेमा बताउनुहोस्", "text_en": "Talk about your daily life"},
 ]
 
 
@@ -163,9 +62,13 @@ class RecordingService:
         self.db = db
         self.storage = get_storage_service()
 
-    def get_prompts(self) -> list[dict]:
-        """Get all recording prompts."""
-        return RECORDING_PROMPTS
+    def get_tips(self) -> list[dict]:
+        """Get recording tips (Nepali)."""
+        return RECORDING_TIPS
+
+    def get_suggestions(self) -> list[dict]:
+        """Get optional topic suggestions (Nepali)."""
+        return RECORDING_SUGGESTIONS
 
     async def upload_recording(
         self,
@@ -187,13 +90,11 @@ class RecordingService:
         if not metadata.get("valid"):
             raise ValueError(metadata.get("error", "Invalid audio file"))
 
-        # Validate prompt index
-        if prompt_index < 0 or prompt_index >= len(RECORDING_PROMPTS):
-            raise ValueError(f"Invalid prompt index: {prompt_index}")
+        # Validate recording number
+        if prompt_index < 0 or prompt_index >= settings.max_recordings_per_profile:
+            raise ValueError(f"Recording number {prompt_index} is out of range")
 
-        prompt = RECORDING_PROMPTS[prompt_index]
-
-        # Upload original to S3
+        # Upload original to storage
         s3_key = self.storage.upload_audio(
             file_bytes=file_bytes,
             voice_profile_id=str(voice_profile_id),
@@ -227,7 +128,7 @@ class RecordingService:
         # Create recording record
         recording = Recording(
             voice_profile_id=voice_profile_id,
-            prompt_text=prompt["text"],
+            prompt_text=f"रेकर्डिङ {prompt_index + 1}",
             prompt_index=prompt_index,
             status=status,
             original_file_path=s3_key,

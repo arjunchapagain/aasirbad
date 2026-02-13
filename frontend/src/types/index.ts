@@ -57,18 +57,22 @@ export interface VoiceProfileListResponse {
 
 // ── Recording Types ─────────────────────────────────────────────────────────
 
-export interface RecordingPrompt {
-  index: number;
-  text: string;
-  category: string;
-  estimated_duration_seconds: number;
+export interface RecordingTip {
+  text_ne: string;
+  text_en: string;
+}
+
+export interface RecordingSuggestion {
+  text_ne: string;
+  text_en: string;
 }
 
 export interface RecordingSession {
   profile_name: string;
-  prompts: RecordingPrompt[];
+  tips: RecordingTip[];
+  suggestions: RecordingSuggestion[];
   completed_recordings: number;
-  total_prompts: number;
+  max_recordings: number;
   min_required: number;
 }
 

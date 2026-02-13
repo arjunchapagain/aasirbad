@@ -9,22 +9,21 @@ import {
   Square,
   CheckCircle2,
   AlertCircle,
-  ChevronRight,
-  ChevronLeft,
   Loader2,
   Volume2,
+  Lightbulb,
+  Info,
 } from 'lucide-react';
 
 import { recording } from '@/lib/api';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { formatDuration } from '@/lib/audio-utils';
-import type { RecordingPrompt, RecordingSession } from '@/types';
+import type { RecordingSession } from '@/types';
 
-type PromptStatus = 'pending' | 'recording' | 'uploading' | 'completed' | 'rejected' | 'error';
-
-interface PromptState {
-  prompt: RecordingPrompt;
-  status: PromptStatus;
+interface CompletedRecording {
+  index: number;
+  duration: number;
+  status: 'completed' | 'rejected';
   message?: string;
 }
 
@@ -33,11 +32,11 @@ export default function RecordPage() {
   const token = params.token as string;
 
   const [session, setSession] = useState<RecordingSession | null>(null);
-  const [promptStates, setPromptStates] = useState<PromptState[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [recordings, setRecordings] = useState<CompletedRecording[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const {
     isRecording,
@@ -50,22 +49,18 @@ export default function RecordPage() {
     error: recorderError,
   } = useAudioRecorder();
 
+  // The next recording number (0-based for API, display as 1-based)
+  const nextIndex = session ? session.completed_recordings + recordings.length : 0;
+  const totalCompleted = session ? session.completed_recordings + recordings.filter(r => r.status === 'completed').length : 0;
+
   // Load session
   useEffect(() => {
     async function loadSession() {
       try {
         const data = await recording.getSession(token);
         setSession(data);
-        setPromptStates(
-          data.prompts.map((p) => ({
-            prompt: p,
-            status: 'pending' as PromptStatus,
-          })),
-        );
-        // Skip already completed prompts
-        setCurrentIndex(data.completed_recordings);
       } catch (err: any) {
-        setError(err.detail || 'Invalid recording link');
+        setError(err.detail || 'लिङ्क मान्य छैन');
       } finally {
         setLoading(false);
       }
@@ -85,68 +80,38 @@ export default function RecordPage() {
       if (!audioBlob) return;
 
       setUploading(true);
-      setPromptStates((prev) =>
-        prev.map((s, i) =>
-          i === currentIndex ? { ...s, status: 'uploading' } : s,
-        ),
-      );
 
       try {
-        const result = await recording.upload(
-          token,
-          currentIndex,
-          audioBlob,
-        );
+        const result = await recording.upload(token, nextIndex, audioBlob);
 
-        const newStatus: PromptStatus =
-          result.status === 'rejected' ? 'rejected' : 'completed';
+        const newRecording: CompletedRecording = {
+          index: nextIndex,
+          duration: duration,
+          status: result.status === 'rejected' ? 'rejected' : 'completed',
+          message: result.message,
+        };
 
-        setPromptStates((prev) =>
-          prev.map((s, i) =>
-            i === currentIndex
-              ? { ...s, status: newStatus, message: result.message }
-              : s,
-          ),
-        );
+        setRecordings((prev) => [...prev, newRecording]);
 
         if (result.status === 'rejected') {
-          toast.error(result.message);
+          toast.error(result.message || 'रेकर्डिङ अस्वीकार भयो');
         } else {
-          toast.success('Recording saved!');
-          // Auto-advance
-          if (currentIndex < promptStates.length - 1) {
-            setTimeout(() => setCurrentIndex((i) => i + 1), 500);
-          }
+          toast.success('रेकर्डिङ सेभ भयो!');
         }
       } catch (err: any) {
-        setPromptStates((prev) =>
-          prev.map((s, i) =>
-            i === currentIndex
-              ? { ...s, status: 'error', message: err.detail || 'Upload failed' }
-              : s,
-          ),
-        );
-        toast.error('Failed to upload recording');
+        toast.error(err.detail || 'अपलोड असफल भयो');
       } finally {
         setUploading(false);
       }
     } else {
       // Start recording
-      setPromptStates((prev) =>
-        prev.map((s, i) =>
-          i === currentIndex ? { ...s, status: 'recording' } : s,
-        ),
-      );
       await startRecording();
     }
-  }, [isRecording, stopRecording, startRecording, token, currentIndex, promptStates.length]);
-
-  const completedCount = promptStates.filter((s) => s.status === 'completed').length;
-  const currentPrompt = promptStates[currentIndex];
+  }, [isRecording, stopRecording, startRecording, token, nextIndex, duration]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
       </div>
     );
@@ -154,21 +119,24 @@ export default function RecordPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Invalid Link</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">लिङ्क मान्य छैन</h1>
           <p className="text-gray-600">{error}</p>
         </div>
       </div>
     );
   }
 
+  const minReached = session ? totalCompleted >= session.min_required : false;
+  const maxReached = session ? nextIndex >= session.max_recordings : false;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-100">
-        <div className="max-w-3xl mx-auto px-6 py-4">
+        <div className="max-w-2xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
@@ -177,125 +145,154 @@ export default function RecordPage() {
               <span className="font-bold text-gray-900">VoiceForge</span>
             </div>
             <div className="text-sm text-gray-600">
-              Recording for <span className="font-medium text-gray-900">{session?.profile_name}</span>
+              <span className="font-medium text-gray-900">{session?.profile_name}</span>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-8">
-        {/* Progress Bar */}
+      <main className="max-w-2xl mx-auto px-6 py-8">
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            भ्वाइस रेकर्डिङ
+          </h1>
+          <p className="text-gray-500 text-sm">
+            कृपया नेपालीमा बोलेर आफ्नो आवाज रेकर्ड गर्नुहोस्
+          </p>
+        </div>
+
+        {/* Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
             <span>
-              {completedCount} of {session?.total_prompts} recordings
-              {session && completedCount >= session.min_required && (
-                <span className="text-green-600 ml-2">
-                  (minimum reached!)
-                </span>
+              {totalCompleted} रेकर्डिङ पूरा
+              {minReached && (
+                <span className="text-green-600 ml-2">✓ न्यूनतम पुग्यो</span>
               )}
             </span>
-            <span>Prompt {currentIndex + 1}/{session?.total_prompts}</span>
+            <span>कम्तिमा {session?.min_required} चाहिन्छ</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
-              className="bg-brand-600 h-2 rounded-full progress-bar"
+              className="bg-brand-600 h-2.5 rounded-full transition-all duration-500"
               style={{
-                width: `${(completedCount / (session?.total_prompts || 1)) * 100}%`,
+                width: `${Math.min(100, (totalCompleted / (session?.min_required || 1)) * 100)}%`,
               }}
             />
           </div>
         </div>
 
-        {/* Prompt Card */}
+        {/* Tips */}
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-2">
+            <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-semibold text-blue-900 mb-2">सुझावहरू</h3>
+              <ul className="space-y-1">
+                {session?.tips.map((tip, i) => (
+                  <li key={i} className="text-sm text-blue-800">
+                    • {tip.text_ne}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Recording Card */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-6">
-          {/* Category badge */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs font-medium text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full">
-              {currentPrompt?.prompt.category.replace('_', ' ')}
-            </span>
-            <span className="text-xs text-gray-400">
-              ~{currentPrompt?.prompt.estimated_duration_seconds}s
-            </span>
-          </div>
-
-          {/* Prompt text */}
-          <blockquote className="text-xl sm:text-2xl font-medium text-gray-900 leading-relaxed mb-8">
-            &ldquo;{currentPrompt?.prompt.text}&rdquo;
-          </blockquote>
-
-          {/* Audio Level Visualizer */}
-          <div className="flex items-center justify-center gap-1 h-16 mb-6">
-            {isRecording ? (
-              Array.from({ length: 20 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-1.5 bg-brand-500 rounded-full transition-all duration-75"
-                  style={{
-                    height: `${Math.max(4, audioLevel * 64 * (1 + Math.sin(i * 0.5 + Date.now() / 200) * 0.3))}px`,
-                    opacity: 0.4 + audioLevel * 0.6,
-                  }}
-                />
-              ))
-            ) : (
-              <div className="flex items-center gap-2 text-gray-400">
-                <Volume2 className="w-5 h-5" />
-                <span className="text-sm">Read the text above aloud</span>
+          {maxReached ? (
+            <div className="text-center py-4">
+              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                अधिकतम रेकर्डिङ पूरा भयो!
+              </h3>
+              <p className="text-gray-500 text-sm">
+                तपाईंले अधिकतम {session?.max_recordings} रेकर्डिङ गर्नुभयो।
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Recording number */}
+              <div className="text-center mb-4">
+                <span className="text-sm font-medium text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
+                  रेकर्डिङ #{nextIndex + 1}
+                </span>
               </div>
-            )}
-          </div>
 
-          {/* Recording Duration */}
-          {isRecording && (
-            <div className="text-center mb-4">
-              <span className="text-2xl font-mono font-medium text-red-500">
-                {formatDuration(duration)}
-              </span>
-            </div>
-          )}
+              {/* Instruction */}
+              <p className="text-center text-gray-700 mb-6 text-lg">
+                कृपया कुनै पनि कुरा नेपालीमा बोल्नुहोस्
+              </p>
 
-          {/* Record Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={handleRecord}
-              disabled={!isReady || uploading}
-              className={`w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-lg ${
-                isRecording
-                  ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse-slow'
-                  : uploading
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-brand-600 hover:bg-brand-700 shadow-brand-600/30'
-              }`}
-            >
-              {uploading ? (
-                <Loader2 className="w-8 h-8 text-white animate-spin" />
-              ) : isRecording ? (
-                <Square className="w-8 h-8 text-white" />
-              ) : (
-                <Mic className="w-8 h-8 text-white" />
+              {/* Audio Level Visualizer */}
+              <div className="flex items-center justify-center gap-1 h-16 mb-6">
+                {isRecording ? (
+                  Array.from({ length: 24 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-1.5 bg-brand-500 rounded-full transition-all duration-75"
+                      style={{
+                        height: `${Math.max(4, audioLevel * 64 * (1 + Math.sin(i * 0.5 + Date.now() / 200) * 0.3))}px`,
+                        opacity: 0.4 + audioLevel * 0.6,
+                      }}
+                    />
+                  ))
+                ) : (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Volume2 className="w-5 h-5" />
+                    <span className="text-sm">रेकर्ड बटन थिच्नुहोस्</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Recording Duration */}
+              {isRecording && (
+                <div className="text-center mb-4">
+                  <span className="text-3xl font-mono font-medium text-red-500">
+                    {formatDuration(duration)}
+                  </span>
+                </div>
               )}
-            </button>
-          </div>
 
-          {/* Status message */}
-          <p className="text-center text-sm text-gray-500 mt-4">
-            {!isReady
-              ? 'Please allow microphone access'
-              : uploading
-                ? 'Uploading and analyzing...'
-                : isRecording
-                  ? 'Click to stop recording'
-                  : 'Click to start recording'}
-          </p>
+              {/* Record Button */}
+              <div className="flex justify-center">
+                <button
+                  onClick={handleRecord}
+                  disabled={!isReady || uploading}
+                  className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                    isRecording
+                      ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse'
+                      : uploading
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-brand-600 hover:bg-brand-700 shadow-brand-600/30 hover:scale-105'
+                  }`}
+                >
+                  {uploading ? (
+                    <Loader2 className="w-10 h-10 text-white animate-spin" />
+                  ) : isRecording ? (
+                    <Square className="w-10 h-10 text-white" />
+                  ) : (
+                    <Mic className="w-10 h-10 text-white" />
+                  )}
+                </button>
+              </div>
 
-          {/* Rejection / Error message */}
-          {currentPrompt?.status === 'rejected' && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <span>{currentPrompt.message} - Please try again.</span>
-            </div>
+              {/* Status message */}
+              <p className="text-center text-sm text-gray-500 mt-4">
+                {!isReady
+                  ? 'माइक्रोफोनको अनुमति दिनुहोस्'
+                  : uploading
+                    ? 'अपलोड हुँदैछ...'
+                    : isRecording
+                      ? 'रोक्न बटन थिच्नुहोस्'
+                      : 'रेकर्ड सुरु गर्न बटन थिच्नुहोस्'}
+              </p>
+            </>
           )}
 
+          {/* Recorder errors */}
           {recorderError && (
             <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-start gap-2">
               <MicOff className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -304,76 +301,82 @@ export default function RecordPage() {
           )}
         </div>
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between">
+        {/* Optional Suggestions */}
+        <div className="bg-white rounded-xl border border-gray-100 mb-6">
           <button
-            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            disabled={currentIndex === 0 || isRecording}
-            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => setShowSuggestions(!showSuggestions)}
+            className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors rounded-xl"
           >
-            <ChevronLeft className="w-4 h-4" />
-            Previous
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-medium text-gray-700">
+                के बोल्ने? — विचारहरू
+              </span>
+            </div>
+            <span className="text-xs text-gray-400">
+              {showSuggestions ? 'लुकाउनुहोस्' : 'हेर्नुहोस्'}
+            </span>
           </button>
-          <button
-            onClick={() =>
-              setCurrentIndex((i) => Math.min(promptStates.length - 1, i + 1))
-            }
-            disabled={currentIndex >= promptStates.length - 1 || isRecording}
-            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Next
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Prompt List */}
-        <div className="mt-8 bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
-          <div className="px-4 py-3">
-            <h3 className="text-sm font-semibold text-gray-900">All Prompts</h3>
-          </div>
-          {promptStates.map((state, index) => (
-            <button
-              key={index}
-              onClick={() => !isRecording && setCurrentIndex(index)}
-              className={`w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors ${
-                index === currentIndex ? 'bg-brand-50' : ''
-              }`}
-            >
-              {state.status === 'completed' ? (
-                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-              ) : state.status === 'rejected' ? (
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-              ) : (
+          {showSuggestions && (
+            <div className="px-4 pb-4 space-y-2">
+              {session?.suggestions.map((s, i) => (
                 <div
-                  className={`w-5 h-5 rounded-full border-2 flex-shrink-0 ${
-                    index === currentIndex
-                      ? 'border-brand-500'
-                      : 'border-gray-200'
-                  }`}
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900 truncate">
-                  {state.prompt.text}
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {state.prompt.category.replace('_', ' ')}
-                </p>
-              </div>
-            </button>
-          ))}
+                  key={i}
+                  className="flex items-start gap-2 p-2 rounded-lg bg-amber-50"
+                >
+                  <span className="text-amber-600 text-sm mt-0.5">•</span>
+                  <div>
+                    <p className="text-sm text-gray-800">{s.text_ne}</p>
+                    <p className="text-xs text-gray-400">{s.text_en}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Completion Message */}
-        {session && completedCount >= session.min_required && (
-          <div className="mt-8 bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+        {/* Recording History */}
+        {recordings.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
+            <div className="px-4 py-3">
+              <h3 className="text-sm font-semibold text-gray-900">
+                यस सत्रका रेकर्डिङहरू
+              </h3>
+            </div>
+            {[...recordings].reverse().map((rec) => (
+              <div
+                key={rec.index}
+                className="px-4 py-3 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  {rec.status === 'completed' ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  )}
+                  <span className="text-sm text-gray-900">
+                    रेकर्डिङ #{rec.index + 1}
+                  </span>
+                </div>
+                <span className="text-xs text-gray-400">
+                  {formatDuration(rec.duration)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Minimum Reached Message */}
+        {minReached && !maxReached && (
+          <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-6 text-center">
             <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-green-900 mb-1">
-              Minimum recordings reached!
+              न्यूनतम रेकर्डिङ पुग्यो!
             </h3>
             <p className="text-green-700 text-sm">
-              You can continue recording more prompts for better voice quality,
-              or close this page. The voice owner can now start training.
+              अझ राम्रो गुणस्तरको लागि थप रेकर्डिङ गर्न सक्नुहुन्छ।
+              <br />
+              यो पेज बन्द गर्न सक्नुहुन्छ — भ्वाइस ट्रेनिङ सुरु गर्न सकिन्छ।
             </p>
           </div>
         )}

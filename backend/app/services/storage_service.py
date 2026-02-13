@@ -192,6 +192,13 @@ def get_storage_service() -> StorageService:
     global _storage_service
     if _storage_service is None:
         if settings.storage_backend == "s3":
+            try:
+                import boto3  # noqa: F401
+            except ImportError:
+                raise RuntimeError(
+                    "boto3 is required for S3 storage. "
+                    "Install it with: pip install 'voiceforge[s3]'"
+                )
             _storage_service = S3StorageService()
         else:
             _storage_service = LocalStorageService()
