@@ -52,6 +52,10 @@ services:
       - DEBUG=${DEBUG:-true}
       - DB_BACKEND=postgresql
       - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=voiceforge
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-voiceforge_secret}
+      - POSTGRES_DB=voiceforge
       - REDIS_HOST=redis
       - STORAGE_BACKEND=${STORAGE_BACKEND:-local}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000}

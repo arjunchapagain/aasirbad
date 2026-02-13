@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
+        populate_by_name=True,
     )
 
     # ── Application ──────────────────────────────────────────────────────────
@@ -43,11 +44,23 @@ class Settings(BaseSettings):
     postgres_password: str = "voiceforge_secret"
     postgres_db: str = "voiceforge"
 
+    # Direct URL overrides (used by Render / Railway / hosted platforms)
+    database_url_env: str = Field("", alias="DATABASE_URL")
+
     @computed_field  # type: ignore[misc]
     @property
     def database_url(self) -> str:
         if self.db_backend == "sqlite":
             return "sqlite+aiosqlite:///./voiceforge.db"
+        # Prefer explicit DATABASE_URL from platform (Render, Railway, etc.)
+        if self.database_url_env:
+            url = self.database_url_env
+            # Render gives postgres:// but asyncpg needs postgresql+asyncpg://
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+            elif url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return url
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
@@ -58,6 +71,13 @@ class Settings(BaseSettings):
     def database_url_sync(self) -> str:
         if self.db_backend == "sqlite":
             return "sqlite:///./voiceforge.db"
+        if self.database_url_env:
+            url = self.database_url_env
+            # Ensure sync driver
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql://", 1)
+            url = url.replace("postgresql+asyncpg://", "postgresql://")
+            return url
         return (
             f"postgresql://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
@@ -68,21 +88,33 @@ class Settings(BaseSettings):
     redis_port: int = 6379
     redis_password: str = ""
 
+    # Direct URL override (used by Render / Railway / hosted platforms)
+    redis_url_env: str = Field("", alias="REDIS_URL")
+
     @computed_field  # type: ignore[misc]
     @property
     def redis_url(self) -> str:
+        if self.redis_url_env:
+            return self.redis_url_env
         auth = f":{self.redis_password}@" if self.redis_password else ""
         return f"redis://{auth}{self.redis_host}:{self.redis_port}/0"
 
     @computed_field  # type: ignore[misc]
     @property
     def celery_broker_url(self) -> str:
+        if self.redis_url_env:
+            # Use db 1 for broker
+            base = self.redis_url_env.rstrip("/").rsplit("/", 1)[0]
+            return f"{base}/1"
         auth = f":{self.redis_password}@" if self.redis_password else ""
         return f"redis://{auth}{self.redis_host}:{self.redis_port}/1"
 
     @computed_field  # type: ignore[misc]
     @property
     def celery_result_backend(self) -> str:
+        if self.redis_url_env:
+            base = self.redis_url_env.rstrip("/").rsplit("/", 1)[0]
+            return f"{base}/2"
         auth = f":{self.redis_password}@" if self.redis_password else ""
         return f"redis://{auth}{self.redis_host}:{self.redis_port}/2"
 
