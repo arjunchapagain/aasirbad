@@ -20,9 +20,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const tokens = await auth.login(email, password);
-      localStorage.setItem('access_token', tokens.access_token);
-      localStorage.setItem('refresh_token', tokens.refresh_token);
+      await auth.login(email, password);
       toast.success('Welcome back!');
       router.push('/dashboard');
     } catch (err: any) {

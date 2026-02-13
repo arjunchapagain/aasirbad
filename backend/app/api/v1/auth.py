@@ -70,3 +70,13 @@ async def refresh_token(body: TokenRefresh, db: AsyncSession = Depends(get_db)):
 async def get_me(current_user: User = Depends(get_current_user)):
     """Get current authenticated user information."""
     return current_user
+
+
+@router.post("/logout")
+async def logout():
+    """
+    Logout endpoint.
+    Client should discard its tokens. Server-side token blacklisting
+    can be added via Redis when needed.
+    """
+    return {"detail": "Successfully logged out"}

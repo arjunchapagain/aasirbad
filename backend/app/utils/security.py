@@ -2,6 +2,8 @@
 Security utilities for authentication and token management.
 """
 
+import logging
+import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -11,8 +13,13 @@ from passlib.context import CryptContext
 from app.config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Use separate keys for access vs refresh tokens
+_ACCESS_KEY = settings.jwt_secret_key
+_REFRESH_KEY = settings.jwt_secret_key + ":refresh"
 
 
 def hash_password(password: str) -> str:
@@ -29,7 +36,7 @@ def create_access_token(
     user_id: uuid.UUID,
     expires_delta: timedelta | None = None,
 ) -> str:
-    """Create a JWT access token."""
+    """Create a JWT access token with jti, iss, aud claims."""
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.jwt_access_token_expire_minutes)
     )
@@ -38,33 +45,64 @@ def create_access_token(
         "exp": expire,
         "type": "access",
         "iat": datetime.now(timezone.utc),
+        "jti": secrets.token_hex(16),
+        "iss": "voiceforge",
+        "aud": "voiceforge:api",
     }
-    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    return jwt.encode(payload, _ACCESS_KEY, algorithm=settings.jwt_algorithm)
 
 
 def create_refresh_token(user_id: uuid.UUID) -> str:
-    """Create a JWT refresh token."""
+    """Create a JWT refresh token with separate signing key."""
     expire = datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days)
     payload = {
         "sub": str(user_id),
         "exp": expire,
         "type": "refresh",
         "iat": datetime.now(timezone.utc),
+        "jti": secrets.token_hex(16),
+        "iss": "voiceforge",
+        "aud": "voiceforge:refresh",
     }
-    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    return jwt.encode(payload, _REFRESH_KEY, algorithm=settings.jwt_algorithm)
 
 
-def decode_token(token: str) -> dict | None:
-    """Decode and validate a JWT token. Returns payload or None if invalid."""
+def decode_access_token(token: str) -> dict | None:
+    """Decode and validate a JWT access token. Returns payload or None."""
     try:
         payload = jwt.decode(
-            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+            token,
+            _ACCESS_KEY,
+            algorithms=[settings.jwt_algorithm],
+            audience="voiceforge:api",
+            issuer="voiceforge",
         )
         return payload
-    except JWTError:
+    except JWTError as e:
+        logger.warning("Access token validation failed: %s", e)
         return None
 
 
+def decode_refresh_token(token: str) -> dict | None:
+    """Decode and validate a JWT refresh token. Returns payload or None."""
+    try:
+        payload = jwt.decode(
+            token,
+            _REFRESH_KEY,
+            algorithms=[settings.jwt_algorithm],
+            audience="voiceforge:refresh",
+            issuer="voiceforge",
+        )
+        return payload
+    except JWTError as e:
+        logger.warning("Refresh token validation failed: %s", e)
+        return None
+
+
+# Keep backward-compatible alias for non-typed decode (used in deps)
+decode_token = decode_access_token
+
+
 def generate_recording_token() -> str:
-    """Generate a unique token for recording session links."""
-    return uuid.uuid4().hex + uuid.uuid4().hex[:16]
+    """Generate a cryptographically secure recording session token."""
+    return secrets.token_urlsafe(48)

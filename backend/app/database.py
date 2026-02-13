@@ -13,14 +13,14 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# SQLite doesn't support connection pooling options
-_engine_kwargs: dict = {"echo": settings.debug}
+# Only echo SQL when DEBUG is explicitly true AND in development
+_engine_kwargs: dict = {"echo": settings.debug and settings.app_env == "development"}
 if settings.db_backend == "postgresql":
     _engine_kwargs.update(
         pool_size=20,
         max_overflow=10,
         pool_pre_ping=True,
-        pool_recycle=300,
+        pool_recycle=1800,
     )
 
 engine = create_async_engine(settings.database_url, **_engine_kwargs)

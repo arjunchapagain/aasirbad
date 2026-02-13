@@ -1,25 +1,86 @@
 /**
  * API client for VoiceForge backend.
+ *
+ * Features:
+ * - Automatic token refresh on 401 (iOS-ready seamless re-auth)
+ * - Request ID tracing via X-Request-ID header
+ * - Structured error responses with request_id for support
+ * - Prevents concurrent refresh token races
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
+// ── Error Class ─────────────────────────────────────────────────────────────
 
 class ApiError extends Error {
   constructor(
     public status: number,
     public detail: string,
+    public requestId?: string,
   ) {
     super(detail);
     this.name = 'ApiError';
   }
 }
 
+// ── Token Management ────────────────────────────────────────────────────────
+
+const TokenStore = {
+  getAccess: () =>
+    typeof window !== 'undefined'
+      ? localStorage.getItem('access_token')
+      : null,
+  getRefresh: () =>
+    typeof window !== 'undefined'
+      ? localStorage.getItem('refresh_token')
+      : null,
+  set: (access: string, refresh: string) => {
+    localStorage.setItem('access_token', access);
+    localStorage.setItem('refresh_token', refresh);
+  },
+  clear: () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+  },
+};
+
+// Prevent concurrent refresh races (critical for iOS parallel requests)
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshTokens(): Promise<boolean> {
+  const refreshToken = TokenStore.getRefresh();
+  if (!refreshToken) return false;
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!response.ok) {
+      TokenStore.clear();
+      return false;
+    }
+
+    const data = await response.json();
+    TokenStore.set(data.access_token, data.refresh_token);
+    return true;
+  } catch {
+    TokenStore.clear();
+    return false;
+  }
+}
+
+// ── Core Request Function ───────────────────────────────────────────────────
+
 async function request<T>(
   endpoint: string,
   options: RequestInit = {},
+  _isRetry = false,
 ): Promise<T> {
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const token = TokenStore.getAccess();
 
   const headers: HeadersInit = {
     ...(options.headers || {}),
@@ -39,9 +100,36 @@ async function request<T>(
     headers,
   });
 
+  // ── Auto-refresh on 401 (iOS seamless re-auth) ──────────────────────────
+  if (response.status === 401 && !_isRetry && !endpoint.includes('/auth/')) {
+    // Coalesce concurrent refreshes into a single request
+    if (!refreshPromise) {
+      refreshPromise = refreshTokens().finally(() => {
+        refreshPromise = null;
+      });
+    }
+
+    const refreshed = await refreshPromise;
+    if (refreshed) {
+      return request<T>(endpoint, options, true);
+    }
+
+    // Refresh failed — clear tokens and redirect to login
+    TokenStore.clear();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+  }
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new ApiError(response.status, error.detail || 'Request failed');
+    const error = await response
+      .json()
+      .catch(() => ({ detail: 'Unknown error' }));
+    throw new ApiError(
+      response.status,
+      error.detail || 'Request failed',
+      error.request_id,
+    );
   }
 
   if (response.status === 204) {
@@ -72,17 +160,28 @@ export const auth = {
       body: JSON.stringify(data),
     }),
 
-  login: (email: string, password: string) =>
-    request<TokenResponse>('/auth/login', {
+  login: async (email: string, password: string) => {
+    const tokens = await request<TokenResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
-    }),
+    });
+    TokenStore.set(tokens.access_token, tokens.refresh_token);
+    return tokens;
+  },
 
   refresh: (refresh_token: string) =>
     request<TokenResponse>('/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({ refresh_token }),
     }),
+
+  logout: async () => {
+    try {
+      await request<void>('/auth/logout', { method: 'POST' });
+    } finally {
+      TokenStore.clear();
+    }
+  },
 
   me: () => request<User>('/auth/me'),
 };

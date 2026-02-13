@@ -51,6 +51,16 @@ async def upload_recording(
             detail="This voice profile is no longer accepting recordings",
         )
 
+    # Validate content type
+    if audio_file.content_type and audio_file.content_type not in (
+        "audio/wav", "audio/x-wav", "audio/wave", "audio/mpeg",
+        "audio/webm", "application/octet-stream",
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported audio format: {audio_file.content_type}",
+        )
+
     # Read file bytes
     file_bytes = await audio_file.read()
     filename = audio_file.filename or "recording.wav"

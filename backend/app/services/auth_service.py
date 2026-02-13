@@ -4,6 +4,7 @@ Authentication service.
 Handles user registration, login, and token management.
 """
 
+import logging
 import uuid
 
 from sqlalchemy import select
@@ -15,12 +16,13 @@ from app.schemas.user import TokenResponse, UserCreate
 from app.utils.security import (
     create_access_token,
     create_refresh_token,
-    decode_token,
+    decode_refresh_token,
     hash_password,
     verify_password,
 )
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 class AuthService:
@@ -37,6 +39,8 @@ class AuthService:
         )
         existing = result.scalar_one_or_none()
         if existing:
+            # Always hash to prevent timing-based email enumeration
+            hash_password(user_data.password)
             raise ValueError("Email already registered")
 
         user = User(
@@ -54,7 +58,13 @@ class AuthService:
         result = await self.db.execute(select(User).where(User.email == email))
         user = result.scalar_one_or_none()
 
-        if not user or not verify_password(password, user.hashed_password):
+        if not user:
+            # Hash a dummy password to prevent timing-based enumeration
+            verify_password(password, hash_password("dummy-constant-time"))
+            return None
+
+        if not verify_password(password, user.hashed_password):
+            logger.warning("Failed login attempt for %s", email)
             return None
 
         if not user.is_active:
@@ -73,13 +83,17 @@ class AuthService:
             expires_in=settings.jwt_access_token_expire_minutes * 60,
         )
 
-    async def refresh_tokens(self, refresh_token: str) -> TokenResponse | None:
+    async def refresh_tokens(self, refresh_token_str: str) -> TokenResponse | None:
         """Refresh access token using a valid refresh token."""
-        payload = decode_token(refresh_token)
+        payload = decode_refresh_token(refresh_token_str)
         if not payload or payload.get("type") != "refresh":
             return None
 
-        user_id = uuid.UUID(payload["sub"])
+        try:
+            user_id = uuid.UUID(payload["sub"])
+        except (ValueError, KeyError):
+            return None
+
         result = await self.db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()
 

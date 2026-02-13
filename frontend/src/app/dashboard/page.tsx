@@ -114,9 +114,8 @@ export default function DashboardPage() {
     }
   }
 
-  function handleLogout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+  async function handleLogout() {
+    await auth.logout();
     router.push('/login');
   }
 
