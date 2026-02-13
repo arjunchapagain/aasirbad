@@ -1,0 +1,48 @@
+# ============================================================
+# VoiceForge GPU Worker Dockerfile
+# Includes CUDA support for Tortoise TTS training
+# ============================================================
+
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3-pip \
+    libsndfile1 \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.11 as default
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+# Install Python dependencies
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir .
+
+# Copy application code
+COPY app/ ./app/
+
+# Create non-root user
+RUN groupadd -r voiceforge && useradd -r -g voiceforge voiceforge
+RUN mkdir -p /app/models && chown -R voiceforge:voiceforge /app
+
+USER voiceforge
+
+# Environment for GPU
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+ENV TORCH_DEVICE=cuda
+
+# Start Celery GPU worker
+CMD ["celery", "-A", "app.workers.celery_app", "worker", \
+     "--queues=gpu", \
+     "--concurrency=1", \
+     "--pool=solo", \
+     "--loglevel=info", \
+     "--max-tasks-per-child=5"]

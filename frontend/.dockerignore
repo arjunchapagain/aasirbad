@@ -1,0 +1,21 @@
+# Dependencies (will be installed fresh in container)
+node_modules/
+
+# Build output
+.next/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.local
+.env.local.example
+
+# Docker
+Dockerfile*
+
+# Git
+.git
+.gitignore
