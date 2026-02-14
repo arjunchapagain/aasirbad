@@ -44,8 +44,8 @@ services:
   # ── Backend API ──────────────────────────────────────────
   api:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: dockerfiles/Dockerfile.backend
     container_name: aasirbad-api
     environment:
       - APP_ENV=${APP_ENV:-development}
@@ -77,8 +77,8 @@ services:
   # ── Celery CPU Worker ────────────────────────────────────
   worker-cpu:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: dockerfiles/Dockerfile.backend
     container_name: aasirbad-worker-cpu
     environment:
       - APP_ENV=development
@@ -102,8 +102,8 @@ services:
   # ── Celery GPU Worker (optional, requires nvidia-docker) ─
   worker-gpu:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.worker
+      context: .
+      dockerfile: dockerfiles/Dockerfile.worker
     container_name: aasirbad-worker-gpu
     environment:
       - APP_ENV=development
@@ -135,8 +135,8 @@ services:
       dockerfile: Dockerfile
     container_name: aasirbad-frontend
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-      - NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
+      - NEXT_PUBLIC_API_URL=/api/v1
+      - NEXT_PUBLIC_WS_URL=/ws
     ports:
       - "3000:3000"
     depends_on:

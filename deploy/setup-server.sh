@@ -1,6 +1,6 @@
 #!/bin/bash
 # ──────────────────────────────────────────────────────────────────────────────
-# VoiceForge — Server Setup Script
+# Aasirbad — Server Setup Script
 # Run this on a fresh Ubuntu 22.04+ VPS (DigitalOcean, Hetzner, etc.)
 #
 # Usage:
@@ -17,7 +17,7 @@ if [ -z "$DOMAIN" ]; then
 fi
 
 echo "════════════════════════════════════════════════════"
-echo "  VoiceForge Server Setup — $DOMAIN"
+echo "  Aasirbad Server Setup — $DOMAIN"
 echo "════════════════════════════════════════════════════"
 
 # ── 1. System Dependencies ───────────────────────────────────────────────────
@@ -46,7 +46,7 @@ sudo ufw allow 443/tcp
 sudo ufw --force enable
 
 # ── 4. Clone Project ─────────────────────────────────────────────────────────
-APP_DIR="/opt/voiceforge"
+APP_DIR="/opt/aasirbad"
 echo "→ Setting up project at $APP_DIR..."
 sudo mkdir -p "$APP_DIR"
 sudo chown "$USER:$USER" "$APP_DIR"
@@ -79,21 +79,17 @@ BACKEND_CORS_ORIGINS=https://$DOMAIN
 DB_BACKEND=postgresql
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
-POSTGRES_USER=voiceforge
-POSTGRES_PASSWORD=$DB_PASSWORD
-POSTGRES_DB=voiceforge
+POSTGRES_USER=aasirbad
+    POSTGRES_PASSWORD=$DB_PASSWORD
+    POSTGRES_DB=aasirbad
 
 # Redis (Docker Compose managed)
 REDIS_HOST=redis
 REDIS_PORT=6379
 
 # Storage
-STORAGE_BACKEND=s3
-AWS_ACCESS_KEY_ID=CHANGE_ME
-AWS_SECRET_ACCESS_KEY=CHANGE_ME
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=voiceforge-audio
-S3_MODEL_BUCKET=voiceforge-models
+STORAGE_BACKEND=local
+LOCAL_STORAGE_DIR=/app/storage
 
 # Auth
 JWT_SECRET_KEY=$JWT_SECRET
@@ -107,15 +103,15 @@ AUDIO_SAMPLE_RATE=22050
 
 LOG_LEVEL=INFO
 EOF
-    echo "  ⚠  Edit $ENV_FILE and set your AWS credentials!"
+    echo "  Edit $ENV_FILE to customize settings if needed."
 fi
 
 # ── 6. Nginx Configuration ──────────────────────────────────────────────────
 echo "→ Configuring Nginx..."
-sudo cp "$APP_DIR/deploy/nginx/voiceforge.conf" /etc/nginx/sites-available/voiceforge
-sudo sed -i "s/YOUR_DOMAIN/$DOMAIN/g" /etc/nginx/sites-available/voiceforge
-sudo sed -i "s/server_name _;/server_name $DOMAIN;/g" /etc/nginx/sites-available/voiceforge
-sudo ln -sf /etc/nginx/sites-available/voiceforge /etc/nginx/sites-enabled/
+sudo cp "$APP_DIR/deploy/nginx/aasirbad.conf" /etc/nginx/sites-available/aasirbad
+sudo sed -i "s/YOUR_DOMAIN/$DOMAIN/g" /etc/nginx/sites-available/aasirbad
+sudo sed -i "s/server_name _;/server_name $DOMAIN;/g" /etc/nginx/sites-available/aasirbad
+sudo ln -sf /etc/nginx/sites-available/aasirbad /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 
@@ -127,7 +123,7 @@ sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "admin@$
 }
 
 # ── 8. Start Application ────────────────────────────────────────────────────
-echo "→ Starting VoiceForge..."
+echo "→ Starting Aasirbad..."
 cd "$APP_DIR"
 docker compose pull
 docker compose up -d
@@ -142,7 +138,7 @@ docker compose exec api alembic upgrade head 2>/dev/null || echo "  ⚠  Migrati
 # ── Done ─────────────────────────────────────────────────────────────────────
 echo ""
 echo "════════════════════════════════════════════════════"
-echo "  ✓ VoiceForge is deployed!"
+echo "  ✓ Aasirbad is deployed!"
 echo ""
 echo "  🌐  https://$DOMAIN"
 echo "  📊  Health: https://$DOMAIN/health"
