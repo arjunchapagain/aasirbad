@@ -80,8 +80,8 @@ DB_BACKEND=postgresql
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 POSTGRES_USER=aasirbad
-    POSTGRES_PASSWORD=$DB_PASSWORD
-    POSTGRES_DB=aasirbad
+POSTGRES_PASSWORD=$DB_PASSWORD
+POSTGRES_DB=aasirbad
 
 # Redis (Docker Compose managed)
 REDIS_HOST=redis
@@ -145,7 +145,6 @@ echo "  📊  Health: https://$DOMAIN/health"
 echo "  📖  API Docs: https://$DOMAIN/docs"
 echo ""
 echo "  Next steps:"
-echo "  1. Edit $ENV_FILE — set AWS_ACCESS_KEY_ID/SECRET"
-echo "  2. docker compose restart api worker-cpu"
-echo "  3. Create your first account at https://$DOMAIN/register"
+echo "  1. Visit https://$DOMAIN/register to create your account"
+echo "  2. docker compose logs -f  (to watch logs)"
 echo "════════════════════════════════════════════════════"

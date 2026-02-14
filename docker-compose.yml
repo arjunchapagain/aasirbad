@@ -146,8 +146,8 @@ services:
   # ── Celery Flower (monitoring) ───────────────────────────
   flower:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: dockerfiles/Dockerfile.backend
     container_name: aasirbad-flower
     environment:
       - REDIS_HOST=redis
