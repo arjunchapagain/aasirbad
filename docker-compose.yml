@@ -133,6 +133,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: /api/v1
+        NEXT_PUBLIC_WS_URL: /ws
     container_name: aasirbad-frontend
     environment:
       - NEXT_PUBLIC_API_URL=/api/v1

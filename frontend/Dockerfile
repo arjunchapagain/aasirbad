@@ -13,6 +13,13 @@ RUN npm ci
 
 # Copy source and build
 COPY . .
+
+# NEXT_PUBLIC_* vars must be present at build time
+ARG NEXT_PUBLIC_API_URL=/api/v1
+ARG NEXT_PUBLIC_WS_URL=/ws
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+
 RUN npm run build
 
 # ── Production ───────────────────────────────────────────────
