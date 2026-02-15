@@ -193,9 +193,13 @@ app.add_middleware(
 )
 
 if settings.app_env == "production":
+    _trusted = ["*.aasirbad.com", "aasirbad.com", "localhost", "127.0.0.1"]
+    # Allow bare-IP access when no domain is configured yet
+    if settings.allowed_hosts:
+        _trusted.extend(settings.allowed_hosts.split(","))
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*.onrender.com", "*.aasirbad.com", "aasirbad.com"],
+        allowed_hosts=_trusted,
     )
 
 

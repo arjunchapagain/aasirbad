@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     backend_port: int = 8000
     backend_workers: int = 4
     backend_cors_origins: str = "http://localhost:3000"
+    allowed_hosts: str = ""  # Comma-separated extra trusted hosts (e.g. droplet IP)
 
     # ── Database ─────────────────────────────────────────────────────────────
     db_backend: Literal["postgresql", "sqlite"] = "postgresql"
