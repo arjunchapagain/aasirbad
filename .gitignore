@@ -47,6 +47,10 @@ trained_models/
 storage/
 *.db
 
+# Capacitor iOS/Android native projects
+frontend/ios/
+frontend/android/
+
 # Docker
 docker-compose.override.yml
 

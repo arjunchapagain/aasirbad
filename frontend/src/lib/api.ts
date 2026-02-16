@@ -8,8 +8,15 @@
  * - Prevents concurrent refresh token races
  */
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// Detect Capacitor native environment
+const isCapacitor =
+  typeof window !== 'undefined' &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Capacitor !== undefined;
+
+const API_BASE = isCapacitor
+  ? 'https://aasirbad.works/api/v1'
+  : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 // ── Error Class ─────────────────────────────────────────────────────────────
 
