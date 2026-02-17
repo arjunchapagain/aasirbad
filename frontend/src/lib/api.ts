@@ -191,6 +191,18 @@ export const auth = {
   },
 
   me: () => request<User>('/auth/me'),
+
+  forgotPassword: (email: string) =>
+    request<{ detail: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (token: string, new_password: string) =>
+    request<{ detail: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, new_password }),
+    }),
 };
 
 // ── Voice Profiles ──────────────────────────────────────────────────────────

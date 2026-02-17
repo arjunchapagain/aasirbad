@@ -47,3 +47,22 @@ class TokenRefresh(BaseModel):
     """Schema for refreshing a token."""
 
     refresh_token: str
+
+
+class PasswordResetRequest(BaseModel):
+    """Schema for requesting a password reset."""
+
+    email: EmailStr
+
+
+class PasswordResetConfirm(BaseModel):
+    """Schema for resetting password with token."""
+
+    token: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class AdminPasswordReset(BaseModel):
+    """Schema for admin-initiated password reset."""
+
+    email: EmailStr

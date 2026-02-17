@@ -15,7 +15,9 @@ from app.models.user import User
 from app.schemas.user import TokenResponse, UserCreate
 from app.utils.security import (
     create_access_token,
+    create_password_reset_token,
     create_refresh_token,
+    decode_password_reset_token,
     decode_refresh_token,
     hash_password,
     verify_password,
@@ -106,3 +108,53 @@ class AuthService:
         """Get a user by their ID."""
         result = await self.db.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
+
+    async def get_user_by_email(self, email: str) -> User | None:
+        """Get a user by their email."""
+        result = await self.db.execute(select(User).where(User.email == email))
+        return result.scalar_one_or_none()
+
+    async def create_reset_token(self, email: str) -> str | None:
+        """Create a password reset token for the given email.
+
+        Returns the token if the user exists, None otherwise.
+        Always takes similar time to prevent email enumeration.
+        """
+        user = await self.get_user_by_email(email)
+        if not user:
+            # Spend similar time to prevent timing attacks
+            hash_password("dummy-constant-time")
+            return None
+        return create_password_reset_token(user.id)
+
+    async def reset_password(self, token: str, new_password: str) -> bool:
+        """Reset a user's password using a valid reset token."""
+        payload = decode_password_reset_token(token)
+        if not payload or payload.get("type") != "password_reset":
+            return False
+
+        try:
+            user_id = uuid.UUID(payload["sub"])
+        except (ValueError, KeyError):
+            return False
+
+        user = await self.get_user_by_id(user_id)
+        if not user or not user.is_active:
+            return False
+
+        user.hashed_password = hash_password(new_password)
+        await self.db.flush()
+        logger.info("Password reset for user %s", user.email)
+        return True
+
+    async def admin_reset_password(self, email: str) -> str | None:
+        """Admin generates a password reset link for any user.
+
+        Returns the reset token if user exists.
+        """
+        user = await self.get_user_by_email(email)
+        if not user:
+            return None
+        token = create_password_reset_token(user.id)
+        logger.info("Admin password reset token generated for %s", email)
+        return token

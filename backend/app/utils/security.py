@@ -101,6 +101,36 @@ def decode_refresh_token(token: str) -> dict | None:
 decode_token = decode_access_token
 
 
+def create_password_reset_token(user_id: uuid.UUID) -> str:
+    """Create a short-lived JWT for password reset (30 min)."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+    payload = {
+        "sub": str(user_id),
+        "exp": expire,
+        "type": "password_reset",
+        "iat": datetime.now(timezone.utc),
+        "jti": secrets.token_hex(16),
+        "iss": "aasirbad",
+        "aud": "aasirbad:reset",
+    }
+    return jwt.encode(payload, _ACCESS_KEY + ":reset", algorithm=settings.jwt_algorithm)
+
+
+def decode_password_reset_token(token: str) -> dict | None:
+    """Decode and validate a password reset token. Returns payload or None."""
+    try:
+        return jwt.decode(
+            token,
+            _ACCESS_KEY + ":reset",
+            algorithms=[settings.jwt_algorithm],
+            audience="aasirbad:reset",
+            issuer="aasirbad",
+        )
+    except JWTError as e:
+        logger.warning("Password reset token validation failed: %s", e)
+        return None
+
+
 def generate_recording_token() -> str:
     """Generate a cryptographically secure recording session token."""
     return secrets.token_urlsafe(48)

@@ -1,19 +1,26 @@
 """
 Authentication endpoints.
 
-POST /auth/register - Register new user
-POST /auth/login    - Login and get tokens
-POST /auth/refresh  - Refresh access token
-GET  /auth/me       - Get current user info
+POST /auth/register       - Register new user
+POST /auth/login          - Login and get tokens
+POST /auth/refresh        - Refresh access token
+GET  /auth/me             - Get current user info
+POST /auth/forgot-password - Request password reset
+POST /auth/reset-password  - Reset password with token
+POST /auth/admin/reset    - Admin generates reset link
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.config import get_settings
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import (
+    AdminPasswordReset,
+    PasswordResetConfirm,
+    PasswordResetRequest,
     TokenRefresh,
     TokenResponse,
     UserCreate,
@@ -23,6 +30,7 @@ from app.schemas.user import (
 from app.services.auth_service import AuthService
 
 router = APIRouter()
+settings = get_settings()
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -79,3 +87,82 @@ async def logout():
     can be added via Redis when needed.
     """
     return {"detail": "Successfully logged out"}
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    body: PasswordResetRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Request a password reset.
+
+    Always returns 200 to prevent email enumeration.
+    If the email exists, a reset token is generated.
+    In production, this would send an email.
+    For now, the admin can use /auth/admin/reset.
+    """
+    auth_service = AuthService(db)
+    token = await auth_service.create_reset_token(body.email)
+
+    # In a real setup with SMTP configured, we'd email the link.
+    # For now, just log it so admin can retrieve from logs if needed.
+    if token:
+        import logging
+
+        logging.getLogger(__name__).info(
+            "Password reset link: https://aasirbad.works/reset-password?token=%s",
+            token,
+        )
+
+    # Always return same response to prevent email enumeration
+    return {
+        "detail": "If an account with that email exists, a reset link has been sent.",
+    }
+
+
+@router.post("/reset-password")
+async def reset_password(
+    body: PasswordResetConfirm,
+    db: AsyncSession = Depends(get_db),
+):
+    """Reset password using a valid reset token."""
+    auth_service = AuthService(db)
+    success = await auth_service.reset_password(body.token, body.new_password)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+
+    return {"detail": "Password has been reset successfully"}
+
+
+@router.post("/admin/reset")
+async def admin_reset(
+    body: AdminPasswordReset,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin generates a password reset link for a user.
+
+    Only superusers can use this endpoint.
+    Returns the reset URL that admin can share with the user.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can generate reset links",
+        )
+
+    auth_service = AuthService(db)
+    token = await auth_service.admin_reset_password(body.email)
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    reset_url = f"https://aasirbad.works/reset-password?token={token}"
+    return {"reset_url": reset_url, "expires_in_minutes": 30}
