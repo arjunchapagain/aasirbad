@@ -1,13 +1,15 @@
-# Database Fix - Updated_at Triggers
+# Database Fix - Updated_at Triggers & Sign-in Issues
 
-## Problem
-When registering a voice profile (or updating any record), the application was failing with an internal server error because PostgreSQL doesn't automatically update `updated_at` columns - it requires explicit triggers.
+## Problems
+1. **Voice registration error** - Internal server error when registering a voice profile
+2. **Sign-in issues** - Unable to sign in after attempting the fix
 
-## Root Cause
-The SQLAlchemy models had `onupdate=func.now()` which only works at the ORM level, not at the database level. PostgreSQL needs explicit triggers to auto-update `updated_at` timestamps.
+## Root Causes
+1. PostgreSQL doesn't automatically update `updated_at` columns - requires explicit triggers
+2. Database migrations not properly applied or database not created
 
 ## Solution
-Added PostgreSQL triggers to automatically update `updated_at` columns when rows are modified.
+Added PostgreSQL triggers + proper migration steps to ensure database is correctly set up.
 
 ## Files Changed
 1. **backend/alembic/versions/001_initial.py** - Updated initial migration to include triggers
@@ -15,44 +17,98 @@ Added PostgreSQL triggers to automatically update `updated_at` columns when rows
 
 ## How to Apply the Fix
 
-### Option 1: Fresh Database (New Installation)
-If you're starting fresh or can recreate the database:
+### Step 0: Check Database Connection
+First, verify your database is running and accessible:
 
 ```bash
-cd backend
-# Drop and recreate the database
-alembic downgrade base  # or drop the database manually
-alembic upgrade head    # This will use the updated 001_initial.py with triggers
+# If using Docker Compose
+docker-compose ps  # Check if postgres container is running
+docker-compose logs postgres  # Check postgres logs
+
+# If using local PostgreSQL
+psql -U aasirbad -d aasirbad -c "SELECT 1;"  # Test connection
 ```
 
-### Option 2: Existing Database (Recommended)
-If you have an existing database with data:
+### Step 1: Apply Database Migrations
 
+**RECOMMENDED: Docker Compose (Fresh Start)**
 ```bash
-cd backend
-# Just run the new migration
-alembic upgrade head
-```
-
-This will apply migration `002_add_updated_at_triggers.py` which adds the triggers to existing tables.
-
-### Option 3: Using Docker Compose
-```bash
-# Stop containers
+# Stop all containers
 docker-compose down
 
 # Remove the database volume (WARNING: This deletes all data!)
 docker volume rm aasirbad_postgres_data
 
-# Start fresh with the fixed migration
+# Start services (postgres will recreate the database)
+docker-compose up -d postgres redis
+
+# Wait for postgres to be ready
+sleep 5
+
+# Run migrations inside the backend container OR from your host
+docker-compose run --rm api alembic upgrade head
+
+# Start all services
 docker-compose up -d
 ```
 
-## Verification
-After applying the fix, test by:
-1. Creating a new voice profile via the website
-2. Updating user information
-3. Check that no "internal server error" occurs
+**Alternative: Existing Database (Keep Data)**
+```bash
+cd backend
+# Just apply new migrations
+alembic upgrade head
+```
+
+### Step 2: Verify the Fix
+After applying migrations, check that tables exist:
+
+```bash
+# Using Docker
+docker-compose exec postgres psql -U aasirbad -d aasirbad -c "\dt"
+
+# Using local psql
+psql -U aasirbad -d aasirbad -c "\dt"
+```
+
+You should see tables: `users`, `voice_profiles`, `recordings`, `alembic_version`
+
+### Step 3: Test the Application
+1. Restart the backend: `docker-compose restart api` or restart your dev server
+2. Try to sign up a new user
+3. Try to sign in with the new user
+4. Try to create a voice profile
+
+## Troubleshooting
+
+### "Can't connect to database" error
+```bash
+# Check if postgres is running
+docker-compose ps postgres
+
+# Check logs
+docker-compose logs postgres
+
+# Restart postgres
+docker-compose restart postgres
+```
+
+### "relation 'users' does not exist" error
+This means migrations haven't run. Follow Step 1 above to run migrations.
+
+### "Invalid credentials" when signing in
+- Make sure you created a new account AFTER running the migrations
+- Old accounts may not exist if you recreated the database
+
+### Still having issues?
+```bash
+# Check alembic migration status
+cd backend
+alembic current  # Should show: 002_add_triggers (or 001_initial for fresh installs)
+alembic history  # Show all available migrations
+
+# Check if tables exist
+docker-compose exec postgres psql -U aasirbad -d aasirbad -c "SELECT tablename FROM pg_tables WHERE schemaname='public';"
+```
 
 ## Technical Details
 The fix adds a PostgreSQL function and triggers:
