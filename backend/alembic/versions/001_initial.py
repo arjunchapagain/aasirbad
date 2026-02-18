@@ -18,6 +18,17 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # Create trigger function for updated_at (reusable for all tables)
+    op.execute("""
+    CREATE OR REPLACE FUNCTION update_updated_at_column()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        NEW.updated_at = NOW();
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+    """)
+
     # ── Users table ──────────────────────────────────────────────────────
     op.create_table(
         'users',
@@ -33,6 +44,14 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_index('ix_users_email', 'users', ['email'], unique=True)
+    
+    # Trigger for users.updated_at
+    op.execute("""
+    CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+    """)
 
     # ── Voice Profiles table ─────────────────────────────────────────────
     op.create_table(
@@ -64,6 +83,14 @@ def upgrade() -> None:
     )
     op.create_index('ix_voice_profiles_user_id', 'voice_profiles', ['user_id'])
     op.create_index('ix_voice_profiles_recording_token', 'voice_profiles', ['recording_token'], unique=True)
+    
+    # Trigger for voice_profiles.updated_at
+    op.execute("""
+    CREATE TRIGGER update_voice_profiles_updated_at
+    BEFORE UPDATE ON voice_profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+    """)
 
     # ── Recordings table ─────────────────────────────────────────────────
     op.create_table(
@@ -102,3 +129,4 @@ def downgrade() -> None:
     op.drop_table('users')
     op.execute("DROP TYPE IF EXISTS recordingstatus")
     op.execute("DROP TYPE IF EXISTS profilestatus")
+    op.execute("DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE")
