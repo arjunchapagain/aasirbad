@@ -39,7 +39,7 @@ class VoiceService:
             name=data.name,
             description=data.description,
             recording_token=token,
-            status=ProfileStatus.PENDING,
+            status="pending",
         )
 
         self.db.add(profile)
