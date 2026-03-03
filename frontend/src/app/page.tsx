@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Mic, Sparkles, Heart, ArrowRight, Users, Shield, Volume2 } from 'lucide-react';
 
@@ -34,48 +35,79 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-6 pt-16 pb-32">
+      {/* Hero Section with Image */}
+      <main className="max-w-7xl mx-auto px-6 pt-8 pb-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center max-w-4xl mx-auto"
+          className="grid lg:grid-cols-2 gap-12 items-center min-h-[600px]"
         >
-          <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5 mb-8">
-            <span className="text-amber-600 text-sm">🙏</span>
-            <span className="text-sm font-medium text-amber-800">
-              परिवारको आवाज सुरक्षित राख्नुहोस्
-            </span>
+          {/* Left side - Hero Image */}
+          <div className="flex justify-center lg:justify-end order-2 lg:order-1">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative w-full max-w-sm"
+            >
+              <div className="absolute -inset-4 bg-gradient-to-br from-amber-300 to-orange-300 rounded-3xl blur-2xl opacity-20" />
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
+                <Image
+                  src="/family-hero.jpg"
+                  alt="परिवारको आवाज - Family Voice Heritage"
+                  width={400}
+                  height={600}
+                  priority
+                  className="w-full h-auto object-cover"
+                />
+                {/* Golden overlay accent */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </div>
+            </motion.div>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight">
-            परिवारको <span className="text-amber-600">आवाज</span>
-            <br />
-            <span className="text-orange-600">सदाको लागि</span>
-          </h1>
-
-          <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            हजुरबुवा-हजुरआमाको कथा, आमाबुवाको आसिर्बाद, परिवारको माया —
-            <br className="hidden sm:block" />
-            AI प्रविधिले तपाईंको प्रियजनको आवाज जोगाएर राख्छ।
-          </p>
-
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/register"
-              className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-3.5 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all text-lg font-medium shadow-lg shadow-amber-500/25 hover:shadow-xl"
+          {/* Right side - Text Content */}
+          <div className="order-1 lg:order-2 flex flex-col justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
             >
-              आवाज सुरक्षित गर्नुहोस्
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="flex items-center gap-2 text-gray-700 px-8 py-3.5 rounded-xl border border-gray-200 hover:border-amber-300 hover:bg-amber-50 transition-all text-lg font-medium"
-            >
-              <Volume2 className="w-5 h-5" />
-              कसरी काम गर्छ?
-            </Link>
+              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5 mb-8 w-fit">
+                <span className="text-amber-600 text-sm">🙏</span>
+                <span className="text-sm font-medium text-amber-800">
+                  परिवारको आवाज सुरक्षित राख्नुहोस्
+                </span>
+              </div>
+
+              <h1 className="text-5xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
+                परिवारको <span className="text-amber-600">आवाज</span>
+                <br />
+                <span className="text-orange-600">सदाको लागि</span>
+              </h1>
+
+              <p className="mt-6 text-lg sm:text-lg text-gray-600 leading-relaxed">
+                हजुरबुवा-हजुरआमाको कथा, आमाबुवाको आसिर्बाद, परिवारको माया — AI प्रविधिले तपाईंको प्रियजनको आवाज जोगाएर राख्छ।
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <Link
+                  href="/register"
+                  className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-3.5 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all text-lg font-medium shadow-lg shadow-amber-500/25 hover:shadow-xl"
+                >
+                  आवाज सुरक्षित गर्नुहोस्
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+                <Link
+                  href="#how-it-works"
+                  className="flex items-center gap-2 text-gray-700 px-8 py-3.5 rounded-xl border border-gray-200 hover:border-amber-300 hover:bg-amber-50 transition-all text-lg font-medium"
+                >
+                  <Volume2 className="w-5 h-5" />
+                  कसरी काम गर्छ?
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
 
