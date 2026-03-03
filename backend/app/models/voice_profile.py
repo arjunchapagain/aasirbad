@@ -36,7 +36,7 @@ class VoiceProfile(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[ProfileStatus] = mapped_column(
-        Enum(ProfileStatus), default=ProfileStatus.PENDING, nullable=False,
+        Enum(ProfileStatus, native_enum=False), default=ProfileStatus.PENDING, nullable=False,
     )
 
     # Recording link token (unique, used to generate sharable recording URL)
