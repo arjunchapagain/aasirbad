@@ -37,6 +37,7 @@ export default function RecordPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false);
 
   const {
     isRecording,
@@ -68,9 +69,10 @@ export default function RecordPage() {
     loadSession();
   }, [token]);
 
-  // Request mic permission on mount
-  useEffect(() => {
-    requestPermission();
+  // Handle mic permission request
+  const handlePermissionRequest = useCallback(async () => {
+    setPermissionRequested(true);
+    await requestPermission();
   }, [requestPermission]);
 
   const handleRecord = useCallback(async () => {
@@ -124,6 +126,152 @@ export default function RecordPage() {
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-xl font-bold text-gray-900 mb-2">लिङ्क मान्य छैन</h1>
           <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show microphone permission request screen if not ready and permission hasn't been requested yet
+  if (!isReady && !permissionRequested) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mx-auto mb-4">
+              <Mic className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">माइक्रोफोन अनुमति चाहिन्छ</h1>
+            <p className="text-gray-600 text-sm">
+              भ्वाइस रेकर्डिङ गर्न माइक्रोफोनको अनुमति दिनुपर्छ
+            </p>
+          </div>
+
+          {/* Information Card */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <Mic className="w-5 h-5 text-blue-600 mt-0.5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">
+                    माइक्रोफोन अनुमति किन चाहिन्छ?
+                  </h3>
+                  <p className="text-gray-500 text-xs mt-1">
+                    तपाईंको आवाज रेकर्ड गर्न र आवाज प्रशिक्षण मडेल बनाउन माइक्रोफोन अनुमति आवश्यक छ।
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">
+                    यो सुरक्षित छ
+                  </h3>
+                  <p className="text-gray-500 text-xs mt-1">
+                    आपको रेकर्डिङ केवल भ्वाइस प्रशिक्षणको लागि प्रयोग गरिन्छ।
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <Info className="w-5 h-5 text-green-600 mt-0.5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">
+                    सरल प्रक्रिया
+                  </h3>
+                  <p className="text-gray-500 text-xs mt-1">
+                    तल रहेको बटन थिच्नुहोस् र ब्राउजरले अनुमति सोध्नेछ।
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Permission Button */}
+          <button
+            onClick={handlePermissionRequest}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Mic className="w-5 h-5" />
+              माइक्रोफोन अनुमति दिनुहोस्
+            </div>
+          </button>
+
+          {/* Fallback message */}
+          <p className="text-center text-xs text-gray-500 mt-4">
+            ब्राउजरमा अनुमति संवाद देखा पर्नेछ। कृपया &quot;अनुमति दिनुहोस्&quot; वा &quot;Allow&quot; विकल्प चयन गर्नुहोस्।
+          </p>
+
+          {/* Browser-specific instructions */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-600 font-semibold mb-3">यदि अनुमति संवाद न देखिए:</p>
+            <div className="space-y-2 text-xs text-gray-600">
+              <details className="group">
+                <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
+                  Chrome / Edge मा
+                </summary>
+                <div className="mt-2 ml-2 space-y-1 text-xs">
+                  <p>1. ब्राउजरको माथिपट्टि लकमा क्लिक गर्नुहोस्</p>
+                  <p>2. &quot;साइट सेटिङहरू&quot; चयन गर्नुहोस्</p>
+                  <p>3. माइक्रोफोन अनुमति दिनुहोस्</p>
+                </div>
+              </details>
+              <details className="group">
+                <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
+                  Firefox मा
+                </summary>
+                <div className="mt-2 ml-2 space-y-1 text-xs">
+                  <p>1. ब्राउजार मेनु (☰) खोल्नुहोस्</p>
+                  <p>2. Settings &gt; Privacy &gt; Permissions</p>
+                  <p>3. Microphone खोज्नुहोस् र &quot;Allow&quot; गर्नुहोस्</p>
+                </div>
+              </details>
+              <details className="group">
+                <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
+                  Safari (iPhone/iPad) मा
+                </summary>
+                <div className="mt-2 ml-2 space-y-1 text-xs">
+                  <p>1. Settings &gt; [App नाम] &gt; Microphone</p>
+                  <p>2. &quot;Allow&quot; चयन गर्नुहोस्</p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error screen if permission was requested but failed
+  if (!isReady && permissionRequested && recorderError) {
+    return (
+      <div className="min-h-screen bg-red-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          <div className="text-center">
+            <MicOff className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">माइक्रोफोन अनुमति दिन सकेन</h1>
+            <p className="text-gray-600 text-sm mb-6">{recorderError}</p>
+
+            <button
+              onClick={handlePermissionRequest}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all mb-3"
+            >
+              अनुमति पुनः दिने प्रयास गर्नुहोस्
+            </button>
+
+            <a
+              href="/"
+              className="block text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              गृह पृष्ठमा फर्कनुहोस्
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -280,15 +428,23 @@ export default function RecordPage() {
               </div>
 
               {/* Status message */}
-              <p className="text-center text-sm text-gray-500 mt-4">
-                {!isReady
-                  ? 'माइक्रोफोनको अनुमति दिनुहोस्'
-                  : uploading
-                    ? 'अपलोड हुँदैछ...'
-                    : isRecording
-                      ? 'रोक्न बटन थिच्नुहोस्'
-                      : 'रेकर्ड सुरु गर्न बटन थिच्नुहोस्'}
-              </p>
+              <div className="text-center mt-4">
+                {isReady ? (
+                  <p className="text-sm text-gray-500">
+                    {uploading
+                      ? 'अपलोड हुँदैछ...'
+                      : isRecording
+                        ? 'रोक्न बटन थिच्नुहोस्'
+                        : 'रेकर्ड सुरु गर्न बटन थिच्नुहोस्'}
+                  </p>
+                ) : (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs text-blue-700 font-medium">
+                      ✓ माइक्रोफोन तयार छ
+                    </p>
+                  </div>
+                )}
+              </div>
             </>
           )}
 
