@@ -54,7 +54,7 @@ export default function HomePage() {
               <div className="absolute -inset-4 bg-gradient-to-br from-amber-300 to-orange-300 rounded-3xl blur-2xl opacity-20" />
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
                 <Image
-                  src="/family-hero.jpg"
+                  src="/Hajuraama.png"
                   alt="परिवारको आवाज - Family Voice Heritage"
                   width={400}
                   height={600}
