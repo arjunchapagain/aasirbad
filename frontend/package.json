@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "build:ios": "mkdir -p out && cp out/index.html out/index.html 2>/dev/null || echo '<!DOCTYPE html><html><head><meta charset=utf-8><title>आसिर्बाद</title></head><body><p>Loading...</p></body></html>' > out/index.html",
+    "build:ios": "next build && next export -o out",
     "cap:init": "npx cap add ios",
     "cap:sync": "npx cap sync ios",
     "cap:open": "npx cap open ios",
