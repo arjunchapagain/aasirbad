@@ -58,6 +58,7 @@ export default function HomePage() {
                   alt="परिवारको आवाज - Family Voice Heritage"
                   width={400}
                   height={600}
+                  sizes="(max-width: 768px) 90vw, 400px"
                   priority
                   className="w-full h-auto object-cover"
                 />
