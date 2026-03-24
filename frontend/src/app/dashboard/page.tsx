@@ -34,6 +34,19 @@ const STATUS_CONFIG: Record<
   archived: { label: 'Archived', color: 'bg-gray-100 text-gray-500', icon: <Clock className="w-3.5 h-3.5" /> },
 };
 
+function getStatusConfig(status: string): { label: string; color: string; icon: React.ReactNode } {
+  const normalized = status.toLowerCase() as ProfileStatus;
+  if (normalized in STATUS_CONFIG) {
+    return STATUS_CONFIG[normalized];
+  }
+
+  return {
+    label: status,
+    color: 'bg-gray-100 text-gray-700',
+    icon: <AlertCircle className="w-3.5 h-3.5" />,
+  };
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -189,7 +202,8 @@ export default function DashboardPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {profiles.map((profile) => {
-              const statusConfig = STATUS_CONFIG[profile.status];
+              const normalizedStatus = String(profile.status).toLowerCase() as ProfileStatus;
+              const statusConfig = getStatusConfig(String(profile.status));
               return (
                 <div
                   key={profile.id}
@@ -217,7 +231,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Training Progress */}
-                  {(profile.status === 'training' || profile.status === 'processing') && (
+                  {(normalizedStatus === 'training' || normalizedStatus === 'processing') && (
                     <div className="mb-4">
                       <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
                         <span>Training progress</span>
@@ -234,7 +248,7 @@ export default function DashboardPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
-                    {(profile.status === 'pending' || profile.status === 'recording') && (
+                    {(normalizedStatus === 'pending' || normalizedStatus === 'recording') && (
                       <>
                         <button
                           onClick={() => handleCopyLink(profile.id)}
@@ -255,7 +269,7 @@ export default function DashboardPage() {
                       </>
                     )}
 
-                    {profile.status === 'ready' && (
+                    {normalizedStatus === 'ready' && (
                       <Link
                         href={`/synthesize/${profile.id}`}
                         className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium"
