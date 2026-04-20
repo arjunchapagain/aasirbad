@@ -57,6 +57,7 @@ services:
       - REDIS_HOST=redis
       - STORAGE_BACKEND=${STORAGE_BACKEND:-local}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000}
+        - PYTHONPATH=/app  # Set PYTHONPATH to /app for correct imports
     env_file:
       - .env
     ports:
@@ -67,8 +68,8 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./backend/app:/app/app  # Hot reload in development
       - storage_data:/app/storage  # Local file storage
+      - ./backend/app:/app  # Mount backend/app to /app (not /app/app)
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
