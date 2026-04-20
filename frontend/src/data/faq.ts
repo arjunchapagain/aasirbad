@@ -1,0 +1,58 @@
+export const faqData = [
+  {
+    id: 1,
+    question: 'Who can use Aasirbad?',
+    questionNe: 'Aasirbad कसले प्रयोग गर्न सक्छ?',
+    answer: 'Anyone who wants to preserve a loved one\'s voice. Whether you\'re a child recording a parent\'s blessing, a parent preserving a grandparent\'s stories, or a grandchild wanting to hear their grandfather\'s voice—Aasirbad is for you. You need just a smartphone, tablet, or computer and an internet connection to start.',
+    answerNe: 'कोही पनि जो प्रियजनको आवाज सुरक्षित गर्न चाहान्छ। चाहे तपाई आमा-बाबुको आशीर्वाद रेकर्ड गरिरहेको बच्चा हुनुहोस्, दाजु-आमाको कहानीहरू सुरक्षित गरिरहेको आमा-बाबु हुनुहोस्, वा आफ्नो दाजुको आवाज सुन्न चाहने पोता-पोती हुनुहोस्—Aasirbad तपाईको लागि हो।',
+  },
+  {
+    id: 2,
+    question: 'Is Aasirbad free? What\'s the catch?',
+    questionNe: 'के Aasirbad नि: शुल्क हो?',
+    answer: 'Yes, Aasirbad is genuinely free to start. You can record, store, and share basic features completely free. If you want advanced features (like AI transcripts, professional editing), we offer a paid plan. But the core—preserving your loved one\'s voice—stays free. No ads. No tracking.',
+    answerNe: 'हाँ, Aasirbad सुरु गर्न साँच्चै नि: शुल्क हो। तपाई रेकर्ड गर्न, भण्डार गर्न, र साझेदारी गर्न सक्नुहुन्छ सम्पूर्ण रूपमा नि: शुल्क। यदि तपाई अधिक भण्डारण वा उन्नत बैसेचुरहरु चाहान्छ, हामी सशुल्क योजना प्रस्ताव गर्छौँ।',
+  },
+  {
+    id: 3,
+    question: 'How long will my recordings be stored?',
+    questionNe: 'मेरा रेकर्डिङहरू कति लामो भण्डार गरिन्छन्?',
+    answer: 'As long as your account is active, your recordings are kept safely. We commit to preserving them indefinitely. We use automatic backups and redundancy to ensure your voice never gets lost, even if our company changes.',
+    answerNe: 'जब सम्म तपाईको खाता सक्रिय हुन्छ, तपाईको रेकर्डिङहरु सुरक्षित राखिन्छन्। हामी सदा को लागि यो सुरक्षित राख्न प्रतिबद्ध छौँ।',
+  },
+  {
+    id: 4,
+    question: 'What if someone misuses my recording?',
+    questionNe: 'यदि कोई मेरो रेकर्डिङ दुरुपयोग गरे?',
+    answer: 'Your recordings are private by default. Only people you explicitly share with can access them. You control every single share link. If you suspect misuse, you can revoke access immediately. If someone uses your voice without consent for commercial purposes, we have legal protections in place.',
+    answerNe: 'तपाईको रेकर्डिङहरु डिफल्ट रूपमा निजी हुन्छन्। केवल मानिसहरु जसलाई तपाईले स्पष्ट रूपमा साझेदारी गरेका हुन उनीहरु पहुँच गर्न सक्छन्।',
+  },
+  {
+    id: 5,
+    question: 'Can I edit or delete my recordings?',
+    questionNe: 'के म रेकर्डिङ सम्पादन वा मेटाउन सक्छु?',
+    answer: 'Yes to both. You can trim recordings, add notes, or adjust privacy settings anytime. If you want to delete a recording, it\'s gone immediately from our servers (and all backups within 30 days). No questions asked.',
+    answerNe: 'हाँ दुबै। तपाई रेकर्डिङहरु काट्न, नोटहरु जोड्न, वा कहिले पनि गोपनीयता सेटिङ्सहरु समायोजन गर्न सक्नुहुन्छ।',
+  },
+  {
+    id: 6,
+    question: 'What devices can I use to access recordings?',
+    questionNe: 'कुन डिभाइसहरु Aasirbad को साथ काम गर्छन्?',
+    answer: 'All of them. Record on your smartphone (iOS/Android), tablet, laptop, or desktop. Access your recordings anywhere with internet. You can also download recordings to listen offline.',
+    answerNe: 'सबै। तपाईको स्मार्टफोन (iOS/Android), ट्याबलेट, ल्यापटप, वा डेस्कटपमा रेकर्ड गर्नुहोस्। कहिँ पनि इन्टरनेट को साथ तपाईको रेकर्डिङहरु पहुँच गर्नुहोस्।',
+  },
+  {
+    id: 7,
+    question: 'Can I share recordings with distant family members?',
+    questionNe: 'के म अलग देशमा रहेको परिवार सदस्यको साथ साझेदारी गर्न सक्छु?',
+    answer: 'Absolutely. Aasirbad works globally. Your cousin in USA, your uncle in UK, your grandmother in Nepal—everyone can access recordings you share. They just need the link and an internet connection.',
+    answerNe: 'पक्कै। Aasirbad विश्वव्यापी काम गर्छ। तपाईको चचेरे भाई अमेरिका मा, तपाईको काका बेलायत मा, तपाईको दाजु नेपाल मा।',
+  },
+  {
+    id: 8,
+    question: 'How is my data protected?',
+    questionNe: 'मेरा डेटा कसरी सुरक्षित हुन्छन्?',
+    answer: 'All voice recordings are encrypted both in transit and at rest. We use military-grade encryption and follow GDPR and international privacy laws. We never use your voice for AI training or any other purpose. Your voice, your data, your control.',
+    answerNe: 'सबै आवाज रेकर्डिङ दुबै ट्रान्जिट र आराम समय एनक्रिप्ट गरिन्छ। हामी सैन्य-ग्रेड एनक्रिप्सन र GDPR पछि गर्छौँ।',
+  },
+];

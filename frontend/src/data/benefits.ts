@@ -1,0 +1,32 @@
+export const benefitsData = [
+  {
+    id: 1,
+    icon: '🎤',
+    title: 'Simple Recording',
+    titleNe: 'सरल रेकर्डिङ',
+    description: 'No technical skills needed. Record on any device—phone, tablet, or computer. One click. That\'s it.',
+    descriptionNe: 'कुनै प्राविधिक कौशल आवश्यक छैन। कुनै पनि डिभाइसमा रेकर्ड गर्नुहोस्—फोन, ट्याबलेट, वा कम्प्यूटर। एक क्लिक। बस।',
+    badge: 'Designed for everyone',
+    badgeNe: 'सबैको लागि डिजाइन गरिएको',
+  },
+  {
+    id: 2,
+    icon: '🛡️',
+    title: 'Forever Preserved',
+    titleNe: 'सदा सुरक्षित',
+    description: 'Your recordings are secure, backed up, and accessible to your family whenever they need to hear that voice.',
+    descriptionNe: 'तपाईको रेकर्डिङ सुरक्षित, ब्याकअप गरिएको, र तपाईको परिवारलाई कहिले पनि सुलभ हुन्छ।',
+    badge: 'Automatic backup',
+    badgeNe: 'स्वचालित ब्याकअप',
+  },
+  {
+    id: 3,
+    icon: '❤️',
+    title: 'Shared Legacy',
+    titleNe: 'विरासत साझेदारी',
+    description: 'Let your children, grandchildren, and generations to come experience the real voice of their ancestors.',
+    descriptionNe: 'तपाईको सन्तान, पोती-पोता, र आउने पुस्ताहरूलाई तपाईको पूर्वजहरूको वास्तविक आवाज अनुभव गराउनुहोस्।',
+    badge: 'Generational access',
+    badgeNe: 'पुस्तागत पहुँच',
+  },
+];
