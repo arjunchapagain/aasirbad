@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD - Build & Deploy
 
 on:
   push:
@@ -70,3 +70,58 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: https://aasirbad-api.onrender.com/api/v1
         run: npm run build
+
+  # ── Deploy to DigitalOcean ──────────────────────────────────
+  deploy:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to DigitalOcean
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+          
+          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+            set -e
+            echo "🚀 Deploying Aasirbad..."
+            
+            # Navigate to app directory or clone
+            if [ ! -d /opt/aasirbad/.git ]; then
+              mkdir -p /opt/aasirbad
+              cd /opt/aasirbad
+              git clone https://github.com/arjunchapagain/aasirbad.git .
+            else
+              cd /opt/aasirbad
+            fi
+            
+            echo "📥 Pulling latest changes..."
+            git pull origin master
+            
+            echo "🔧 Installing frontend dependencies..."
+            cd frontend && npm ci && npm run build
+            
+            echo "✅ Build complete!"
+            echo ""
+            echo "ℹ️  Next steps: Restart your services"
+            echo "  - If using PM2: pm2 restart aasirbad"
+            echo "  - If using systemd: systemctl restart aasirbad"
+            echo "  - If using Docker: docker-compose restart"
+          EOF
+      
+      - name: Deployment Status
+        if: success()
+        run: echo "✅ Successfully deployed to DigitalOcean!"
+      
+      - name: Deployment Failed
+        if: failure()
+        run: echo "❌ Deployment failed! Check logs above."
