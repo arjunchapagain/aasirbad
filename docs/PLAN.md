@@ -1,6 +1,6 @@
 # Plan
 
-Decisions: English only for now (i18n deferred); real product; hosted TTS API; Railway; multilingual by user location; real Postgres; security first.
+Decisions: free tier with usage limits; English only for now (i18n deferred); real product; hosted TTS API; Railway; multilingual by user location; real Postgres; security first.
 
 ## Milestones (one per branch/session)
 1. Merge migration/enum fixes (done, branch `fix/migrations-and-enum-values`).
@@ -9,8 +9,7 @@ Decisions: English only for now (i18n deferred); real product; hosted TTS API; R
 4. TTS provider: interface in `voice_engine/`, hosted provider adapter, drop Tortoise/torch from default deps.
 5. Storage: S3-compatible bucket for audio; Railway Postgres + Redis.
 6. Railway deploy: healthcheck, migrations on start, env docs, backups.
-7. Billing/limits (optional).
+7. Free-tier usage limits (per-user caps on profiles, recordings, synthesis chars/month). Paid plans later.
 
 ## Open questions
 - Which hosted TTS provider (voice cloning quality for Nepali/Hindi)?
-- Free tier vs paid?
