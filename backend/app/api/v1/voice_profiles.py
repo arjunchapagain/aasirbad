@@ -13,7 +13,7 @@ GET    /record/{token}          - Public: Get recording session (via token)
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -44,6 +44,12 @@ async def create_voice_profile(
 ):
     """Create a new voice profile for cloning."""
     voice_service = VoiceService(db)
+    if await voice_service.count_profiles(current_user.id) >= settings.max_profiles_per_user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Free plan allows up to {settings.max_profiles_per_user} voice profiles. "
+            "Delete one to create another.",
+        )
     return await voice_service.create_profile(current_user.id, data)
 
 
@@ -123,6 +129,7 @@ async def get_recording_link(
 @router.post("/{profile_id}/train", response_model=TrainingTriggerResponse)
 async def trigger_training(
     profile_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -133,7 +140,7 @@ async def trigger_training(
     if not profile:
         raise HTTPException(status_code=404, detail="Voice profile not found")
 
-    if profile.status == ProfileStatus.TRAINING:
+    if profile.status in (ProfileStatus.TRAINING, ProfileStatus.PROCESSING):
         raise HTTPException(status_code=409, detail="Training already in progress")
 
     if profile.status == ProfileStatus.READY:
@@ -150,16 +157,22 @@ async def trigger_training(
             f"Currently have {count}.",
         )
 
-    # Queue training job via Celery
-    from app.workers.tasks import train_voice_model
-
-    job = train_voice_model.delay(str(profile_id))
-
-    # Update status to processing
+    # Mark as processing and commit BEFORE the job starts so it can't race the worker
     await voice_service.update_training_status(profile_id, ProfileStatus.PROCESSING)
+    await db.commit()
+
+    if settings.task_mode == "celery":
+        from app.workers.tasks import train_voice_model
+
+        job_id = train_voice_model.delay(str(profile_id)).id
+    else:
+        from app.services.training_service import run_training
+
+        background_tasks.add_task(run_training, str(profile_id))
+        job_id = f"inline-{profile_id}"
 
     return TrainingTriggerResponse(
-        job_id=job.id,
+        job_id=job_id,
         status="queued",
         message=f"Training job queued. {count} recordings will be used.",
     )

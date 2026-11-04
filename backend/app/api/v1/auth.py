@@ -164,5 +164,5 @@ async def admin_reset(
             detail="User not found",
         )
 
-    reset_url = f"https://aasirbad.works/reset-password?token={token}"
+    reset_url = f"{settings.frontend_url}/reset-password?token={token}"
     return {"reset_url": reset_url, "expires_in_minutes": 30}

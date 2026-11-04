@@ -41,8 +41,7 @@ celery_app.conf.update(
 
     # Task routing
     task_routes={
-        "app.workers.tasks.train_voice_model": {"queue": "gpu"},
-        "app.workers.tasks.preprocess_recordings": {"queue": "cpu"},
+        "app.workers.tasks.train_voice_model": {"queue": "cpu"},
     },
 
     # Result settings

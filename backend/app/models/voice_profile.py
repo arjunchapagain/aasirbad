@@ -56,6 +56,7 @@ class VoiceProfile(Base):
     training_completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True,
     )
+    consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     training_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     training_progress: Mapped[float] = mapped_column(Float, default=0.0)
 

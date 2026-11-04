@@ -53,12 +53,8 @@ async def lifespan(_app: FastAPI):
     # Startup
     logger.info("Starting Aasirbad API", env=settings.app_env)
 
-    # Refuse to start in production with default secrets
-    if settings.app_env == "production":
-        if settings.secret_key in ("change-me-in-production", ""):
-            raise RuntimeError("SECRET_KEY must be set in production")
-        if settings.jwt_secret_key in ("jwt-secret-change-in-production", ""):
-            raise RuntimeError("JWT_SECRET_KEY must be set in production")
+    # Refuse to start in production with default secrets / debug on
+    settings.assert_production_safe()
 
     # Wait for database to be available (handles Render provisioning delay)
     db_ready = await wait_for_db(retries=20, delay=5.0)
@@ -239,17 +235,21 @@ if settings.storage_backend == "local":
     from fastapi.responses import FileResponse
 
     @app.get("/api/v1/files/{file_path:path}", tags=["Files"])
-    async def serve_local_file(file_path: str):
-        """Serve locally stored audio/model files. Path traversal protected."""
+    async def serve_local_file(file_path: str, exp: int = 0, sig: str = ""):
+        """Serve locally stored audio via signed, expiring URLs. Path traversal protected."""
+        from app.services.storage_service import verify_file_signature
+
+        if not sig or not verify_file_signature(file_path, exp, sig):
+            raise HTTPException(status_code=403, detail="Invalid or expired link")
         base = _Path(settings.local_storage_dir).resolve()
-        # Try audio dir first, then models dir
         for subdir in ("audio", "models"):
-            full_path = (base / subdir / file_path).resolve()
-            # Prevent path traversal: resolved path MUST be inside base
-            if not full_path.is_relative_to(base):
+            root = (base / subdir).resolve()
+            full_path = (root / file_path).resolve()
+            if not full_path.is_relative_to(root):
                 raise HTTPException(status_code=403, detail="Access denied")
-            if full_path.exists() and full_path.is_file():
-                return FileResponse(full_path, media_type="audio/wav")
+            if full_path.is_file():
+                mt = "audio/mpeg" if full_path.suffix == ".mp3" else "audio/wav"
+                return FileResponse(full_path, media_type=mt)
         raise HTTPException(status_code=404, detail="File not found")
 
 
@@ -316,6 +316,30 @@ async def training_status_websocket(websocket: WebSocket, profile_id: str):
         await websocket.close(code=4001, reason="Invalid token")
         return
 
+    # Only the profile's owner may watch its training progress
+    from sqlalchemy import select
+
+    from app.database import async_session_factory
+    from app.models.voice_profile import VoiceProfile
+
+    try:
+        import uuid as _uuid
+        pid = _uuid.UUID(profile_id)
+    except ValueError:
+        await websocket.close(code=4004, reason="Not found")
+        return
+    try:
+        async with async_session_factory() as _db:
+            owner = (await _db.execute(
+                select(VoiceProfile.user_id).where(VoiceProfile.id == pid),
+            )).scalar_one_or_none()
+    except Exception:  # noqa: BLE001
+        await websocket.close(code=1011, reason="Service unavailable")
+        return
+    if owner is None or str(owner) != payload.get("sub"):
+        await websocket.close(code=4003, reason="Forbidden")
+        return
+
     await manager.connect(websocket, profile_id)
 
     # Subscribe to Redis channel
@@ -330,7 +354,12 @@ async def training_status_websocket(websocket: WebSocket, profile_id: str):
         return
 
     pubsub = redis.pubsub()
-    await pubsub.subscribe(f"training:{profile_id}")
+    try:
+        await pubsub.subscribe(f"training:{profile_id}")
+    except Exception:  # noqa: BLE001
+        # Redis not available: client falls back to polling the profile endpoint
+        await websocket.close(code=1011, reason="Realtime updates unavailable")
+        return
 
     try:
         # Forward Redis messages to WebSocket
