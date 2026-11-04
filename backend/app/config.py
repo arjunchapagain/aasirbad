@@ -83,6 +83,9 @@ class Settings(BaseSettings):
             if url.startswith("postgres://"):
                 url = url.replace("postgres://", "postgresql://", 1)
             url = url.replace("postgresql+asyncpg://", "postgresql://")
+            # SQLAlchemy 2.1+ defaults bare postgresql:// to psycopg v3; we ship psycopg2
+            if url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
             # Ensure SSL for cloud databases
             is_cloud = "neon" in url or "supabase" in url or self.app_env == "production"
             if "sslmode" not in url and is_cloud:
@@ -90,7 +93,7 @@ class Settings(BaseSettings):
                 url = f"{url}{sep}sslmode=require"
             return url
         return (
-            f"postgresql://{self.postgres_user}:{self.postgres_password}"
+            f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
