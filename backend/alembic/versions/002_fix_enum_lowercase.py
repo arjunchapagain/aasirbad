@@ -18,6 +18,9 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
+    # Drop the column default first; it can't be auto-cast to the new enum type
+    op.execute("ALTER TABLE voice_profiles ALTER COLUMN status DROP DEFAULT;")
+
     # Rename the old enum type
     op.execute("ALTER TYPE profilestatus RENAME TO profilestatus_old;")
 
@@ -38,6 +41,9 @@ def upgrade():
 
     # Alter the column to use the new enum type
     op.execute("ALTER TABLE voice_profiles ALTER COLUMN status TYPE profilestatus USING status::profilestatus;")
+
+    # Restore the default
+    op.execute("ALTER TABLE voice_profiles ALTER COLUMN status SET DEFAULT 'pending';")
 
     # Drop the old enum type
     op.execute("DROP TYPE profilestatus_old;")

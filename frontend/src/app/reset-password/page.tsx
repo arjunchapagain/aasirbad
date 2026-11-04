@@ -23,12 +23,12 @@ function ResetPasswordForm() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error('पासवर्ड मेल खाएन');
+      toast.error('Passwords do not match');
       return;
     }
 
     if (password.length < 8) {
-      toast.error('पासवर्ड कम्तिमा ८ अक्षर हुनुपर्छ');
+      toast.error('Password must be at least 8 characters');
       return;
     }
 
@@ -37,10 +37,10 @@ function ResetPasswordForm() {
     try {
       await auth.resetPassword(token, password);
       setSuccess(true);
-      toast.success('पासवर्ड सफलतापूर्वक रिसेट भयो!');
+      toast.success('Password reset successfully!');
       setTimeout(() => router.push('/login'), 3000);
     } catch (err: any) {
-      toast.error(err.detail || 'रिसेट लिंक अमान्य वा म्याद सकिएको छ');
+      toast.error(err.detail || 'Reset link is invalid or has expired');
     } finally {
       setLoading(false);
     }
@@ -49,15 +49,15 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-        <h2 className="text-lg font-semibold text-red-600 mb-2">अमान्य लिंक</h2>
+        <h2 className="text-lg font-semibold text-red-600 mb-2">Invalid link</h2>
         <p className="text-gray-600 text-sm mb-4">
-          यो रिसेट लिंक अमान्य छ। कृपया फेरि प्रयास गर्नुहोस्।
+          This reset link is invalid. Please try again.
         </p>
         <Link
           href="/forgot-password"
           className="text-brand-600 hover:text-brand-700 font-medium text-sm"
         >
-          नयाँ रिसेट लिंक लिनुहोस्
+          Request a new reset link
         </Link>
       </div>
     );
@@ -69,9 +69,9 @@ function ResetPasswordForm() {
         <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-7 h-7 text-green-600" />
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">पासवर्ड रिसेट भयो!</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Password reset!</h2>
         <p className="text-gray-600 text-sm">
-          लगइन पेजमा रिडाइरेक्ट हुँदैछ...
+          Redirecting to sign in...
         </p>
       </div>
     );
@@ -84,7 +84,7 @@ function ResetPasswordForm() {
     >
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          नयाँ पासवर्ड
+          New password
         </label>
         <div className="relative">
           <input
@@ -94,7 +94,7 @@ function ResetPasswordForm() {
             required
             minLength={8}
             className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all pr-10"
-            placeholder="कम्तिमा ८ अक्षर"
+            placeholder="At least 8 characters"
           />
           <button
             type="button"
@@ -108,7 +108,7 @@ function ResetPasswordForm() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          पासवर्ड पुष्टि गर्नुहोस्
+          Confirm password
         </label>
         <input
           type="password"
@@ -117,7 +117,7 @@ function ResetPasswordForm() {
           required
           minLength={8}
           className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-          placeholder="पासवर्ड फेरि हाल्नुहोस्"
+          placeholder="Re-enter your password"
         />
       </div>
 
@@ -126,7 +126,7 @@ function ResetPasswordForm() {
         disabled={loading}
         className="w-full bg-brand-600 text-white py-2.5 rounded-lg hover:bg-brand-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'रिसेट गर्दै...' : 'पासवर्ड रिसेट गर्नुहोस्'}
+        {loading ? 'Resetting...' : 'Reset password'}
       </button>
     </form>
   );
@@ -142,11 +142,11 @@ export default function ResetPasswordPage() {
               <span className="text-white text-xl font-bold">ॐ</span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-2xl font-bold text-gray-900">आसिर्बाद</span>
+              <span className="text-2xl font-bold text-gray-900">Aasirbad</span>
               <span className="text-[10px] text-amber-700 font-medium -mt-0.5">AASIRBAD</span>
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">नयाँ पासवर्ड सेट गर्नुहोस्</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Set a new password</h1>
         </div>
 
         <Suspense fallback={<div className="text-center text-gray-500">Loading...</div>}>

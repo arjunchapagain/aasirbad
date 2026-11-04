@@ -40,12 +40,21 @@ class VoiceService:
             description=data.description,
             recording_token=token,
             status="pending",
+            consent_at=datetime.now(timezone.utc),
         )
 
         self.db.add(profile)
         await self.db.flush()
         await self.db.refresh(profile)
         return profile
+
+    async def count_profiles(self, user_id: uuid.UUID) -> int:
+        from sqlalchemy import func
+
+        result = await self.db.execute(
+            select(func.count(VoiceProfile.id)).where(VoiceProfile.user_id == user_id),
+        )
+        return result.scalar_one()
 
     async def get_profile(
         self,
@@ -108,8 +117,39 @@ class VoiceService:
         if not profile:
             return False
 
+        await self._purge_external_data(profile)
         await self.db.delete(profile)
         return True
+
+    async def _purge_external_data(self, profile: VoiceProfile) -> None:
+        """Best-effort removal of stored audio and the provider-side cloned voice."""
+        import logging
+
+        from app.models.recording import Recording
+        from app.services.storage_service import get_storage_service
+        from app.voice_engine.providers import get_provider
+
+        log = logging.getLogger(__name__)
+        storage = get_storage_service()
+        rows = await self.db.execute(
+            select(Recording.original_file_path, Recording.processed_file_path)
+            .where(Recording.voice_profile_id == profile.id),
+        )
+        for paths in rows.all():
+            for path in paths:
+                if path:
+                    try:
+                        storage.delete_file(path)
+                    except Exception:  # noqa: BLE001
+                        log.warning("Could not delete stored file %s", path)
+        if profile.model_path and ":" in profile.model_path:
+            name, voice_id = profile.model_path.split(":", 1)
+            try:
+                provider = get_provider()
+                if provider.name == name:
+                    provider.delete_voice(voice_id)
+            except Exception:  # noqa: BLE001
+                log.warning("Could not delete provider voice for profile %s", profile.id)
 
     async def update_training_status(
         self,

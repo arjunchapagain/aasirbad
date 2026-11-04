@@ -149,7 +149,7 @@ class RecordingService:
         # Create recording record
         recording = Recording(
             voice_profile_id=voice_profile_id,
-            prompt_text=f"रेकर्डिङ {prompt_index + 1}",
+            prompt_text=f"Recording {prompt_index + 1}",
             prompt_index=prompt_index,
             status=status,
             original_file_path=s3_key,

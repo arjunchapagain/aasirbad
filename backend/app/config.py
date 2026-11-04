@@ -83,6 +83,9 @@ class Settings(BaseSettings):
             if url.startswith("postgres://"):
                 url = url.replace("postgres://", "postgresql://", 1)
             url = url.replace("postgresql+asyncpg://", "postgresql://")
+            # SQLAlchemy 2.1+ defaults bare postgresql:// to psycopg v3; we ship psycopg2
+            if url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
             # Ensure SSL for cloud databases
             is_cloud = "neon" in url or "supabase" in url or self.app_env == "production"
             if "sslmode" not in url and is_cloud:
@@ -90,7 +93,7 @@ class Settings(BaseSettings):
                 url = f"{url}{sep}sslmode=require"
             return url
         return (
-            f"postgresql://{self.postgres_user}:{self.postgres_password}"
+            f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
@@ -147,12 +150,23 @@ class Settings(BaseSettings):
     jwt_refresh_token_expire_days: int = 7
 
     # ── Voice Engine ─────────────────────────────────────────────────────────
-    tortoise_model_dir: str = "./models/tortoise"
     max_recording_duration_seconds: int = 30
     min_recordings_for_training: int = 5
     max_recordings_per_profile: int = 50
     audio_sample_rate: int = 22050
     audio_format: str = "wav"
+
+    # ── TTS provider (hosted API; no local GPU needed) ───────────────────────
+    tts_provider: Literal["demo", "elevenlabs"] = "demo"
+    elevenlabs_api_key: str = ""
+    elevenlabs_model: str = "eleven_multilingual_v2"
+    # "inline" runs training in the API process (no Celery/Redis needed); "celery" queues it
+    task_mode: Literal["inline", "celery"] = "inline"
+
+    # ── Free tier limits (per user) ──────────────────────────────────────────
+    max_profiles_per_user: int = 3
+    monthly_synthesis_chars: int = 5000
+    max_synthesis_chars_per_request: int = 1000
 
     # ── GPU ───────────────────────────────────────────────────────────────────
     torch_device: str = "cpu"
@@ -167,6 +181,25 @@ class Settings(BaseSettings):
     # ── Monitoring ───────────────────────────────────────────────────────────
     sentry_dsn: str = ""
     log_level: str = "INFO"
+
+    @property
+    def frontend_url(self) -> str:
+        return self.cors_origins[0] if self.cors_origins else "http://localhost:3000"
+
+    def assert_production_safe(self) -> None:
+        """Refuse to boot in production with default/placeholder secrets."""
+        if self.app_env != "production":
+            return
+        bad = [
+            name for name, val in (
+                ("SECRET_KEY", self.secret_key),
+                ("JWT_SECRET_KEY", self.jwt_secret_key),
+            ) if "change-me" in val or "change-in-production" in val or len(val) < 32
+        ]
+        if bad:
+            raise RuntimeError(f"Insecure default secrets in production: {', '.join(bad)}")
+        if self.debug:
+            raise RuntimeError("DEBUG must be false in production")
 
     @computed_field  # type: ignore[misc]
     @property

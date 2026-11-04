@@ -10,8 +10,8 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
-    # 1. Set all status values to lowercase (if any left)
-    op.execute("UPDATE voice_profiles SET status = LOWER(status);")
+    # 1. (Lowercasing happens in step 6, after the column is converted to text;
+    #    LOWER() does not accept an enum-typed column.)
 
     # 2. Drop default and constraints
     op.execute("ALTER TABLE voice_profiles ALTER COLUMN status DROP DEFAULT;")

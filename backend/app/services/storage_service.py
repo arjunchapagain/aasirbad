@@ -5,6 +5,9 @@ Supports local filesystem storage (for development) and AWS S3 (for production).
 The backend is selected via the STORAGE_BACKEND env var.
 """
 
+import hashlib
+import hmac
+import time
 import uuid
 from pathlib import Path
 
@@ -50,6 +53,16 @@ class StorageService:
 
     def file_exists(self, key: str, bucket: str | None = None) -> bool:
         raise NotImplementedError
+
+
+def sign_file_key(key: str, exp: int) -> str:
+    """HMAC signature for a locally served file URL."""
+    msg = f"{key}:{exp}".encode()
+    return hmac.new(settings.secret_key.encode(), msg, hashlib.sha256).hexdigest()
+
+
+def verify_file_signature(key: str, exp: int, sig: str) -> bool:
+    return exp > time.time() and hmac.compare_digest(sign_file_key(key, exp), sig)
 
 
 # ── Local Filesystem Storage ─────────────────────────────────────────────────
@@ -103,10 +116,12 @@ class LocalStorageService(StorageService):
         self,
         key: str,
         bucket: str | None = None,  # noqa: ARG002
-        expires_in: int = 3600,  # noqa: ARG002
+        expires_in: int = 3600,
     ) -> str:
-        # For local dev, return a URL that the FastAPI static file endpoint serves
-        return f"/api/v1/files/{key}"
+        # Signed, expiring URL served by the FastAPI file endpoint
+        exp = int(time.time()) + expires_in
+        sig = sign_file_key(key, exp)
+        return f"/api/v1/files/{key}?exp={exp}&sig={sig}"
 
     def delete_file(self, key: str, bucket: str | None = None) -> None:
         base = self.model_dir if bucket == "models" else self.audio_dir

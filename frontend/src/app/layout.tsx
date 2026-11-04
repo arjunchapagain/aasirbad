@@ -7,10 +7,10 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'आसिर्बाद — परिवारको आवाज सुरक्षित राख्नुहोस्',
+  title: 'Aasirbad — Preserve your family\'s voice',
   description:
-    'हजुरबुवा-हजुरआमाको कथा, आमाबुवाको आसिर्बाद — AI ले तपाईंको प्रियजनको आवाज जोगाएर राख्छ।',
-  keywords: ['voice cloning', 'nepali voice', 'AI voice', 'family voice', 'आसिर्बाद', 'नेपाली'],
+    'Preserve the voices of the people you love. Record once, and let AI speak in their voice for generations.',
+  keywords: ['voice cloning', 'AI voice', 'family voice', 'aasirbad'],
 };
 
 export default function RootLayout({

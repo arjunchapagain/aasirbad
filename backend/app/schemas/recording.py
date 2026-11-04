@@ -42,8 +42,9 @@ class SynthesisRequest(BaseModel):
 
     text: str = Field(..., min_length=1, max_length=5000)
     voice_profile_id: uuid.UUID
-    speed: float = Field(1.0, ge=0.5, le=2.0)  # Speech speed multiplier
-    preset: str = Field("fast", pattern="^(ultra_fast|fast|standard|high_quality)$")
+    # Accepted for backward compatibility with older clients; ignored by hosted providers
+    speed: float = Field(1.0, ge=0.5, le=2.0)
+    preset: str | None = None
 
 
 class SynthesisResponse(BaseModel):
@@ -53,3 +54,11 @@ class SynthesisResponse(BaseModel):
     duration_seconds: float
     text: str
     voice_profile_id: uuid.UUID
+
+
+class UsageResponse(BaseModel):
+    """Free-tier synthesis usage for the current month."""
+
+    used: int
+    limit: int
+    remaining: int

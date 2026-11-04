@@ -36,7 +36,9 @@ class VoiceProfile(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[ProfileStatus] = mapped_column(
-        Enum(ProfileStatus, native_enum=False), default=ProfileStatus.PENDING, nullable=False,
+        Enum(
+            ProfileStatus, native_enum=False, values_callable=lambda e: [m.value for m in e],
+        ), default=ProfileStatus.PENDING, nullable=False,
     )
 
     # Recording link token (unique, used to generate sharable recording URL)
@@ -54,6 +56,7 @@ class VoiceProfile(Base):
     training_completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True,
     )
+    consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     training_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     training_progress: Mapped[float] = mapped_column(Float, default=0.0)
 

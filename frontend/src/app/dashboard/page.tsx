@@ -56,10 +56,28 @@ export default function DashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [consent, setConsent] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Poll while any voice is being cloned so progress and "ready" show up without a refresh
+  const anyBusy = profiles.some((p) =>
+    ['training', 'processing'].includes(String(p.status).toLowerCase()),
+  );
+  useEffect(() => {
+    if (!anyBusy) return;
+    const id = setInterval(async () => {
+      try {
+        const data = await voiceProfiles.list();
+        setProfiles(data.items);
+      } catch {
+        /* keep last known state */
+      }
+    }, 2000);
+    return () => clearInterval(id);
+  }, [anyBusy]);
 
   async function loadData() {
     try {
@@ -83,11 +101,13 @@ export default function DashboardPage() {
       const profile = await voiceProfiles.create({
         name: newName,
         description: newDescription || undefined,
+        consent,
       });
       setProfiles((prev) => [profile, ...prev]);
       setShowCreateModal(false);
       setNewName('');
       setNewDescription('');
+      setConsent(false);
       toast.success('Voice profile created!');
     } catch (err: any) {
       toast.error(err.detail || 'Failed to create profile');
@@ -149,7 +169,7 @@ export default function DashboardPage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
               <span className="text-white text-sm font-bold">ॐ</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">आसिर्बाद</span>
+            <span className="text-lg font-bold text-gray-900">Aasirbad</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">{user?.full_name}</span>
@@ -326,6 +346,18 @@ export default function DashboardPage() {
                   placeholder="Optional description..."
                 />
               </div>
+              <label className="flex items-start gap-2 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  I confirm the speaker has given their permission for their voice to be
+                  recorded and cloned, and I will only use it lawfully.
+                </span>
+              </label>
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="button"
@@ -336,7 +368,7 @@ export default function DashboardPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={creating || !newName.trim()}
+                  disabled={creating || !newName.trim() || !consent}
                   className="flex-1 bg-brand-600 text-white py-2.5 rounded-lg hover:bg-brand-700 transition-colors font-medium disabled:opacity-50"
                 >
                   {creating ? 'Creating...' : 'Create'}

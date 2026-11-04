@@ -20,6 +20,7 @@ from app.utils.security import (
     decode_password_reset_token,
     decode_refresh_token,
     hash_password,
+    password_fingerprint,
     verify_password,
 )
 
@@ -125,7 +126,7 @@ class AuthService:
             # Spend similar time to prevent timing attacks
             hash_password("dummy-constant-time")
             return None
-        return create_password_reset_token(user.id)
+        return create_password_reset_token(user.id, password_fingerprint(user.hashed_password))
 
     async def reset_password(self, token: str, new_password: str) -> bool:
         """Reset a user's password using a valid reset token."""
@@ -142,6 +143,10 @@ class AuthService:
         if not user or not user.is_active:
             return False
 
+        # Token is single-use: it is bound to the password hash it was issued against
+        if payload.get("pwf", "") != password_fingerprint(user.hashed_password):
+            return False
+
         user.hashed_password = hash_password(new_password)
         await self.db.flush()
         logger.info("Password reset for user %s", user.email)
@@ -155,6 +160,6 @@ class AuthService:
         user = await self.get_user_by_email(email)
         if not user:
             return None
-        token = create_password_reset_token(user.id)
+        token = create_password_reset_token(user.id, password_fingerprint(user.hashed_password))
         logger.info("Admin password reset token generated for %s", email)
         return token

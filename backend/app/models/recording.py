@@ -39,7 +39,9 @@ class Recording(Base):
     prompt_text: Mapped[str] = mapped_column(Text, nullable=False)
     prompt_index: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[RecordingStatus] = mapped_column(
-        Enum(RecordingStatus, native_enum=False), default=RecordingStatus.UPLOADED, nullable=False,
+        Enum(
+            RecordingStatus, native_enum=False, values_callable=lambda e: [m.value for m in e],
+        ), default=RecordingStatus.UPLOADED, nullable=False,
     )
 
     # Audio file info

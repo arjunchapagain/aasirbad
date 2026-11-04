@@ -9,18 +9,10 @@ import {
   PauseCircle,
   Loader2,
   ArrowLeft,
-  Settings2,
 } from 'lucide-react';
 
-import { synthesis, voiceProfiles } from '@/lib/api';
-import type { VoiceProfile, SynthesisResponse, SynthesisRequest } from '@/types';
-
-const PRESETS = [
-  { value: 'ultra_fast', label: 'Ultra Fast', desc: 'Fastest, lower quality' },
-  { value: 'fast', label: 'Fast', desc: 'Good balance of speed and quality' },
-  { value: 'standard', label: 'Standard', desc: 'High quality, slower' },
-  { value: 'high_quality', label: 'High Quality', desc: 'Best quality, slowest' },
-] as const;
+import { synthesis, voiceProfiles, resolveAudioUrl } from '@/lib/api';
+import type { VoiceProfile, SynthesisResponse, SynthesisUsage } from '@/types';
 
 export default function SynthesizePage() {
   const params = useParams();
@@ -29,7 +21,7 @@ export default function SynthesizePage() {
 
   const [profile, setProfile] = useState<VoiceProfile | null>(null);
   const [text, setText] = useState('');
-  const [preset, setPreset] = useState<SynthesisRequest['preset']>('fast');
+  const [usage, setUsage] = useState<SynthesisUsage | null>(null);
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<SynthesisResponse | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -46,6 +38,7 @@ export default function SynthesizePage() {
       }
     }
     loadProfile();
+    synthesis.usage().then(setUsage).catch(() => {});
   }, [profileId, router]);
 
   async function handleGenerate(e: React.FormEvent) {
@@ -63,15 +56,15 @@ export default function SynthesizePage() {
       const response = await synthesis.generate({
         text: text.trim(),
         voice_profile_id: profileId,
-        preset,
       });
 
       setResult(response);
       setHistory((prev) => [response, ...prev]);
+      synthesis.usage().then(setUsage).catch(() => {});
       toast.success(`Generated ${response.duration_seconds}s of audio`);
 
       // Auto-play
-      const audio = new Audio(response.audio_url);
+      const audio = new Audio(resolveAudioUrl(response.audio_url));
       audio.onended = () => setPlaying(false);
       setAudioElement(audio);
       audio.play();
@@ -110,7 +103,7 @@ export default function SynthesizePage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
               <span className="text-white text-sm font-bold">ॐ</span>
             </div>
-            <span className="font-bold text-gray-900">आसिर्बाद</span>
+            <span className="font-bold text-gray-900">Aasirbad</span>
           </div>
           {profile && (
             <span className="text-sm text-gray-500 ml-auto">
@@ -139,39 +132,17 @@ export default function SynthesizePage() {
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all resize-none"
                   rows={6}
                   placeholder="Type or paste the text you want to hear in the cloned voice..."
-                  maxLength={5000}
+                  maxLength={1000}
                 />
-                <div className="flex justify-end mt-1">
-                  <span className="text-xs text-gray-400">
-                    {text.length}/5000 characters
+                <div className="flex justify-between mt-1">
+                  <span className="text-xs text-gray-500">
+                    {usage
+                      ? `${usage.remaining.toLocaleString()} of ${usage.limit.toLocaleString()} free characters left this month`
+                      : ''}
                   </span>
-                </div>
-              </div>
-
-              {/* Preset Selection */}
-              <div className="mb-6">
-                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-2">
-                  <Settings2 className="w-4 h-4" />
-                  Quality Preset
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {PRESETS.map((p) => (
-                    <button
-                      key={p.value}
-                      type="button"
-                      onClick={() => setPreset(p.value)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        preset === p.value
-                          ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-500/20'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <span className="text-sm font-medium text-gray-900 block">
-                        {p.label}
-                      </span>
-                      <span className="text-xs text-gray-500">{p.desc}</span>
-                    </button>
-                  ))}
+                  <span className="text-xs text-gray-400">
+                    {text.length}/1000 characters
+                  </span>
                 </div>
               </div>
 
@@ -213,7 +184,7 @@ export default function SynthesizePage() {
                       {result.text}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {result.duration_seconds}s &bull; {preset}
+                      {result.duration_seconds}s
                     </p>
                   </div>
                 </div>
@@ -234,7 +205,7 @@ export default function SynthesizePage() {
                   <button
                     key={i}
                     onClick={() => {
-                      const audio = new Audio(item.audio_url);
+                      const audio = new Audio(resolveAudioUrl(item.audio_url));
                       audio.onended = () => setPlaying(false);
                       setAudioElement(audio);
                       audio.play();

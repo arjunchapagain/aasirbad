@@ -1,12 +1,14 @@
-# VoiceForge — Voice Cloning Platform
+# Aasirbad — Voice Cloning Platform
 
-A professional voice cloning platform that lets you capture someone's voice through guided recordings and then synthesize speech in that voice using Tortoise TTS.
+> Run it locally: see [docs/LOCAL.md](docs/LOCAL.md).
+
+A professional voice cloning platform that lets you capture someone's voice through guided recordings and then synthesize speech in that voice using a hosted TTS provider (ElevenLabs, or an offline demo provider).
 
 ## How It Works
 
 1. **Create a Voice Profile** — Register an account, create a named voice profile, and generate a shareable recording link.
 2. **Record Voice Samples** — Send the link to the target speaker. They record 20 curated prompts (pangrams, emotions, conversational phrases) directly in the browser.
-3. **Train the Voice Model** — Trigger training from the dashboard. The system extracts conditioning latents from the recordings using Tortoise TTS.
+3. **Train the Voice Model** — Trigger training from the dashboard. The system extracts conditioning latents from the recordings using a hosted TTS provider (ElevenLabs, or an offline demo provider).
 4. **Synthesize Speech** — Enter any text and generate speech in the cloned voice with adjustable quality presets.
 
 ---
@@ -31,7 +33,7 @@ A professional voice cloning platform that lets you capture someone's voice thro
 |-----------|-----------|
 | Frontend | Next.js 14 (App Router), React 18, Tailwind CSS, Framer Motion |
 | Backend API | FastAPI, Python 3.10+, SQLAlchemy 2.0 (async), Pydantic v2 |
-| Voice Engine | Tortoise TTS, PyTorch, librosa, noisereduce |
+| Voice Engine | Hosted TTS provider interface (ElevenLabs / demo); no local GPU |
 | Task Queue | Celery with Redis broker |
 | Database | PostgreSQL 16 (asyncpg driver) |
 | Storage | AWS S3 (audio files + trained models) |

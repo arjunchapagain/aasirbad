@@ -46,12 +46,12 @@ export default function RegisterPage() {
               <span className="text-white text-xl font-bold">ॐ</span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-2xl font-bold text-gray-900">आसिर्बाद</span>
+              <span className="text-2xl font-bold text-gray-900">Aasirbad</span>
               <span className="text-[10px] text-amber-700 font-medium -mt-0.5">AASIRBAD</span>
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">खाता बनाउनुहोस्</h1>
-          <p className="text-gray-600 mt-1">परिवारको आवाज सुरक्षित राख्न सुरु गर्नुहोस्</p>
+          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
+          <p className="text-gray-600 mt-1">Start preserving your family's voice</p>
         </div>
 
         <form

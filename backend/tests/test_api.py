@@ -95,7 +95,7 @@ class TestVoiceProfiles:
         """Test creating a voice profile."""
         response = await client.post(
             "/api/v1/voice-profiles",
-            json={"name": "Test Voice", "description": "A test voice profile"},
+            json={"name": "Test Voice", "description": "A test voice profile", "consent": True},
             headers=auth_headers,
         )
         assert response.status_code == 201
@@ -109,7 +109,7 @@ class TestVoiceProfiles:
         # Create a profile first
         await client.post(
             "/api/v1/voice-profiles",
-            json={"name": "Voice 1"},
+            json={"name": "Voice 1", "consent": True},
             headers=auth_headers,
         )
 
@@ -127,7 +127,7 @@ class TestVoiceProfiles:
         # Create profile
         create_resp = await client.post(
             "/api/v1/voice-profiles",
-            json={"name": "Link Test"},
+            json={"name": "Link Test", "consent": True},
             headers=auth_headers,
         )
         profile_id = create_resp.json()["id"]
@@ -146,7 +146,7 @@ class TestVoiceProfiles:
         """Test deleting a voice profile."""
         create_resp = await client.post(
             "/api/v1/voice-profiles",
-            json={"name": "To Delete"},
+            json={"name": "To Delete", "consent": True},
             headers=auth_headers,
         )
         profile_id = create_resp.json()["id"]

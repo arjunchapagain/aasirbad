@@ -61,7 +61,7 @@ export default function RecordPage() {
         const data = await recording.getSession(token);
         setSession(data);
       } catch (err: any) {
-        setError(err.detail || 'लिङ्क मान्य छैन');
+        setError(err.detail || 'This link is not valid');
       } finally {
         setLoading(false);
       }
@@ -96,12 +96,12 @@ export default function RecordPage() {
         setRecordings((prev) => [...prev, newRecording]);
 
         if (result.status === 'rejected') {
-          toast.error(result.message || 'रेकर्डिङ अस्वीकार भयो');
+          toast.error(result.message || 'Recording rejected');
         } else {
-          toast.success('रेकर्डिङ सेभ भयो!');
+          toast.success('Recording saved!');
         }
       } catch (err: any) {
-        toast.error(err.detail || 'अपलोड असफल भयो');
+        toast.error(err.detail || 'Upload failed');
       } finally {
         setUploading(false);
       }
@@ -124,7 +124,7 @@ export default function RecordPage() {
       <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">लिङ्क मान्य छैन</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">This link is not valid</h1>
           <p className="text-gray-600">{error}</p>
         </div>
       </div>
@@ -141,9 +141,9 @@ export default function RecordPage() {
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mx-auto mb-4">
               <Mic className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">माइक्रोफोन अनुमति चाहिन्छ</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Microphone access needed</h1>
             <p className="text-gray-600 text-sm">
-              भ्वाइस रेकर्डिङ गर्न माइक्रोफोनको अनुमति दिनुपर्छ
+              Microphone access is needed to record your voice
             </p>
           </div>
 
@@ -156,10 +156,10 @@ export default function RecordPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-sm">
-                    माइक्रोफोन अनुमति किन चाहिन्छ?
+                    Why do we need the microphone?
                   </h3>
                   <p className="text-gray-500 text-xs mt-1">
-                    तपाईंको आवाज रेकर्ड गर्न र आवाज प्रशिक्षण मडेल बनाउन माइक्रोफोन अनुमति आवश्यक छ।
+                    We need microphone access to record your voice and create your voice model.
                   </p>
                 </div>
               </div>
@@ -169,10 +169,10 @@ export default function RecordPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-sm">
-                    यो सुरक्षित छ
+                    It's private
                   </h3>
                   <p className="text-gray-500 text-xs mt-1">
-                    आपको रेकर्डिङ केवल भ्वाइस प्रशिक्षणको लागि प्रयोग गरिन्छ।
+                    Your recordings are used only to create your voice.
                   </p>
                 </div>
               </div>
@@ -182,10 +182,10 @@ export default function RecordPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-sm">
-                    सरल प्रक्रिया
+                    Simple process
                   </h3>
                   <p className="text-gray-500 text-xs mt-1">
-                    तल रहेको बटन थिच्नुहोस् र ब्राउजरले अनुमति सोध्नेछ।
+                    Press the button below and your browser will ask for permission.
                   </p>
                 </div>
               </div>
@@ -199,46 +199,46 @@ export default function RecordPage() {
           >
             <div className="flex items-center justify-center gap-2">
               <Mic className="w-5 h-5" />
-              माइक्रोफोन अनुमति दिनुहोस्
+              Allow microphone
             </div>
           </button>
 
           {/* Fallback message */}
           <p className="text-center text-xs text-gray-500 mt-4">
-            ब्राउजरमा अनुमति संवाद देखा पर्नेछ। कृपया &quot;अनुमति दिनुहोस्&quot; वा &quot;Allow&quot; विकल्प चयन गर्नुहोस्।
+            A permission dialog will appear in your browser. Please choose &quot;Allow&quot;.
           </p>
 
           {/* Browser-specific instructions */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-600 font-semibold mb-3">यदि अनुमति संवाद न देखिए:</p>
+            <p className="text-xs text-gray-600 font-semibold mb-3">If you don't see a permission dialog:</p>
             <div className="space-y-2 text-xs text-gray-600">
               <details className="group">
                 <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
-                  Chrome / Edge मा
+                  In Chrome / Edge
                 </summary>
                 <div className="mt-2 ml-2 space-y-1 text-xs">
-                  <p>1. ब्राउजरको माथिपट्टि लकमा क्लिक गर्नुहोस्</p>
-                  <p>2. &quot;साइट सेटिङहरू&quot; चयन गर्नुहोस्</p>
-                  <p>3. माइक्रोफोन अनुमति दिनुहोस्</p>
+                  <p>1. Click the lock icon at the top of your browser</p>
+                  <p>2. Choose &quot;Site settings&quot;</p>
+                  <p>3. Allow the microphone</p>
                 </div>
               </details>
               <details className="group">
                 <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
-                  Firefox मा
+                  In Firefox
                 </summary>
                 <div className="mt-2 ml-2 space-y-1 text-xs">
-                  <p>1. ब्राउजार मेनु (☰) खोल्नुहोस्</p>
+                  <p>1. Open the browser menu (☰)</p>
                   <p>2. Settings &gt; Privacy &gt; Permissions</p>
-                  <p>3. Microphone खोज्नुहोस् र &quot;Allow&quot; गर्नुहोस्</p>
+                  <p>3. Find Microphone and choose &quot;Allow&quot;</p>
                 </div>
               </details>
               <details className="group">
                 <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
-                  Safari (iPhone/iPad) मा
+                  In Safari (iPhone/iPad)
                 </summary>
                 <div className="mt-2 ml-2 space-y-1 text-xs">
-                  <p>1. Settings &gt; [App नाम] &gt; Microphone</p>
-                  <p>2. &quot;Allow&quot; चयन गर्नुहोस्</p>
+                  <p>1. Settings &gt; [App name] &gt; Microphone</p>
+                  <p>2. Choose &quot;Allow&quot;</p>
                 </div>
               </details>
             </div>
@@ -255,21 +255,21 @@ export default function RecordPage() {
         <div className="max-w-md w-full">
           <div className="text-center">
             <MicOff className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">माइक्रोफोन अनुमति दिन सकेन</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Microphone access was blocked</h1>
             <p className="text-gray-600 text-sm mb-6">{recorderError}</p>
 
             <button
               onClick={handlePermissionRequest}
               className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all mb-3"
             >
-              अनुमति पुनः दिने प्रयास गर्नुहोस्
+              Try again
             </button>
 
             <a
               href="/"
               className="block text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
-              गृह पृष्ठमा फर्कनुहोस्
+              Back to home
             </a>
           </div>
         </div>
@@ -290,7 +290,7 @@ export default function RecordPage() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
                 <span className="text-white text-sm font-bold">ॐ</span>
               </div>
-              <span className="font-bold text-gray-900">आसिर्बाद</span>
+              <span className="font-bold text-gray-900">Aasirbad</span>
             </div>
             <div className="text-sm text-gray-600">
               <span className="font-medium text-gray-900">{session?.profile_name}</span>
@@ -303,10 +303,10 @@ export default function RecordPage() {
         {/* Title */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            भ्वाइस रेकर्डिङ
+            Voice recording
           </h1>
           <p className="text-gray-500 text-sm">
-            कृपया नेपालीमा बोलेर आफ्नो आवाज रेकर्ड गर्नुहोस्
+            Please record your voice by speaking naturally
           </p>
         </div>
 
@@ -314,12 +314,12 @@ export default function RecordPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
             <span>
-              {totalCompleted} रेकर्डिङ पूरा
+              {totalCompleted} recordings done
               {minReached && (
-                <span className="text-green-600 ml-2">✓ न्यूनतम पुग्यो</span>
+                <span className="text-green-600 ml-2">✓ Minimum reached</span>
               )}
             </span>
-            <span>कम्तिमा {session?.min_required} चाहिन्छ</span>
+            <span>At least {session?.min_required} needed</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
@@ -336,11 +336,11 @@ export default function RecordPage() {
           <div className="flex items-start gap-2">
             <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="text-sm font-semibold text-blue-900 mb-2">सुझावहरू</h3>
+              <h3 className="text-sm font-semibold text-blue-900 mb-2">Tips</h3>
               <ul className="space-y-1">
                 {session?.tips.map((tip, i) => (
                   <li key={i} className="text-sm text-blue-800">
-                    • {tip.text_ne}
+                    • {tip.text_en}
                   </li>
                 ))}
               </ul>
@@ -354,10 +354,10 @@ export default function RecordPage() {
             <div className="text-center py-4">
               <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
               <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                अधिकतम रेकर्डिङ पूरा भयो!
+                Maximum recordings reached!
               </h3>
               <p className="text-gray-500 text-sm">
-                तपाईंले अधिकतम {session?.max_recordings} रेकर्डिङ गर्नुभयो।
+                You have made the maximum of {session?.max_recordings} recordings.
               </p>
             </div>
           ) : (
@@ -365,13 +365,13 @@ export default function RecordPage() {
               {/* Recording number */}
               <div className="text-center mb-4">
                 <span className="text-sm font-medium text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
-                  रेकर्डिङ #{nextIndex + 1}
+                  Recording #{nextIndex + 1}
                 </span>
               </div>
 
               {/* Instruction */}
               <p className="text-center text-gray-700 mb-6 text-lg">
-                कृपया कुनै पनि कुरा नेपालीमा बोल्नुहोस्
+                Speak about anything you like
               </p>
 
               {/* Audio Level Visualizer */}
@@ -390,7 +390,7 @@ export default function RecordPage() {
                 ) : (
                   <div className="flex items-center gap-2 text-gray-400">
                     <Volume2 className="w-5 h-5" />
-                    <span className="text-sm">रेकर्ड बटन थिच्नुहोस्</span>
+                    <span className="text-sm">Press the record button</span>
                   </div>
                 )}
               </div>
@@ -432,15 +432,15 @@ export default function RecordPage() {
                 {isReady ? (
                   <p className="text-sm text-gray-500">
                     {uploading
-                      ? 'अपलोड हुँदैछ...'
+                      ? 'Uploading...'
                       : isRecording
-                        ? 'रोक्न बटन थिच्नुहोस्'
-                        : 'रेकर्ड सुरु गर्न बटन थिच्नुहोस्'}
+                        ? 'Press to stop'
+                        : 'Press to start recording'}
                   </p>
                 ) : (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <p className="text-xs text-blue-700 font-medium">
-                      ✓ माइक्रोफोन तयार छ
+                      ✓ Microphone ready
                     </p>
                   </div>
                 )}
@@ -466,11 +466,11 @@ export default function RecordPage() {
             <div className="flex items-center gap-2">
               <Lightbulb className="w-4 h-4 text-amber-500" />
               <span className="text-sm font-medium text-gray-700">
-                के बोल्ने? — विचारहरू
+                What to say? — Ideas
               </span>
             </div>
             <span className="text-xs text-gray-400">
-              {showSuggestions ? 'लुकाउनुहोस्' : 'हेर्नुहोस्'}
+              {showSuggestions ? 'Hide' : 'Show'}
             </span>
           </button>
           {showSuggestions && (
@@ -482,8 +482,7 @@ export default function RecordPage() {
                 >
                   <span className="text-amber-600 text-sm mt-0.5">•</span>
                   <div>
-                    <p className="text-sm text-gray-800">{s.text_ne}</p>
-                    <p className="text-xs text-gray-400">{s.text_en}</p>
+                    <p className="text-sm text-gray-800">{s.text_en}</p>
                   </div>
                 </div>
               ))}
@@ -496,7 +495,7 @@ export default function RecordPage() {
           <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
             <div className="px-4 py-3">
               <h3 className="text-sm font-semibold text-gray-900">
-                यस सत्रका रेकर्डिङहरू
+                Recordings this session
               </h3>
             </div>
             {[...recordings].reverse().map((rec) => (
@@ -511,7 +510,7 @@ export default function RecordPage() {
                     <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                   )}
                   <span className="text-sm text-gray-900">
-                    रेकर्डिङ #{rec.index + 1}
+                    Recording #{rec.index + 1}
                   </span>
                 </div>
                 <span className="text-xs text-gray-400">
@@ -527,12 +526,12 @@ export default function RecordPage() {
           <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-6 text-center">
             <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-green-900 mb-1">
-              न्यूनतम रेकर्डिङ पुग्यो!
+              Minimum recordings reached!
             </h3>
             <p className="text-green-700 text-sm">
-              अझ राम्रो गुणस्तरको लागि थप रेकर्डिङ गर्न सक्नुहुन्छ।
+              You can record more for even better quality.
               <br />
-              यो पेज बन्द गर्न सक्नुहुन्छ — भ्वाइस ट्रेनिङ सुरु गर्न सकिन्छ।
+              You can close this page — voice training can now be started.
             </p>
           </div>
         )}

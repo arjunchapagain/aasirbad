@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.voice_profile import ProfileStatus
 
@@ -13,6 +13,16 @@ class VoiceProfileCreate(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = Field(None, max_length=1000)
+    consent: bool = Field(
+        ..., description="Confirms the speaker consents to having their voice cloned",
+    )
+
+    @field_validator("consent")
+    @classmethod
+    def _must_consent(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("Consent from the speaker is required to clone a voice")
+        return v
 
 
 class VoiceProfileResponse(BaseModel):
