@@ -2,6 +2,7 @@
 Security utilities for authentication and token management.
 """
 
+import hashlib
 import logging
 import secrets
 import uuid
@@ -101,13 +102,19 @@ def decode_refresh_token(token: str) -> dict | None:
 decode_token = decode_access_token
 
 
-def create_password_reset_token(user_id: uuid.UUID) -> str:
+def password_fingerprint(hashed_password: str) -> str:
+    """Short digest of the current password hash; makes reset tokens single-use."""
+    return hashlib.sha256(hashed_password.encode()).hexdigest()[:16]
+
+
+def create_password_reset_token(user_id: uuid.UUID, fingerprint: str = "") -> str:
     """Create a short-lived JWT for password reset (30 min)."""
     expire = datetime.now(timezone.utc) + timedelta(minutes=30)
     payload = {
         "sub": str(user_id),
         "exp": expire,
         "type": "password_reset",
+        "pwf": fingerprint,
         "iat": datetime.now(timezone.utc),
         "jti": secrets.token_hex(16),
         "iss": "aasirbad",

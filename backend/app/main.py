@@ -150,6 +150,9 @@ _rate_limit_store: dict[str, list[float]] = {}
 RATE_LIMITS = {
     "/api/v1/auth/login": (5, 60),        # 5 attempts per 60 seconds
     "/api/v1/auth/register": (3, 60),      # 3 registrations per 60 seconds
+    "/api/v1/auth/forgot-password": (3, 60),
+    "/api/v1/auth/reset-password": (5, 60),
+    "/api/v1/auth/refresh": (30, 60),
 }
 
 
@@ -158,6 +161,9 @@ async def rate_limit(request: Request, call_next):
     """Rate limit sensitive endpoints by IP."""
     path = request.url.path
     limit_config = RATE_LIMITS.get(path)
+    if limit_config is None and path.startswith("/api/v1/recordings/") and path.endswith("/upload"):
+        limit_config = (60, 60)  # public token-based uploads: 60 per minute per IP
+        path = "/api/v1/recordings/*/upload"
     if limit_config and request.method == "POST":
         max_requests, window = limit_config
         client_ip = request.client.host if request.client else "unknown"

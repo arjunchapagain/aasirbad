@@ -153,6 +153,7 @@ import type {
   RecordingSession,
   RecordingUploadResponse,
   SynthesisRequest,
+  SynthesisUsage,
   SynthesisResponse,
   TokenResponse,
   User,
@@ -208,7 +209,7 @@ export const auth = {
 // ── Voice Profiles ──────────────────────────────────────────────────────────
 
 export const voiceProfiles = {
-  create: (data: { name: string; description?: string }) =>
+  create: (data: { name: string; description?: string; consent: boolean }) =>
     request<VoiceProfile>('/voice-profiles', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -260,6 +261,17 @@ export const synthesis = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  usage: () => request<SynthesisUsage>('/synthesis/usage'),
 };
+
+/** Backend returns relative file URLs for local storage; point them at the API origin. */
+export function resolveAudioUrl(url: string): string {
+  if (/^https?:\/\//.test(url)) return url;
+  try {
+    return new URL(API_BASE).origin + url;
+  } catch {
+    return url;
+  }
+}
 
 export { ApiError };

@@ -100,8 +100,12 @@ export interface RecordingUploadResponse {
 export interface SynthesisRequest {
   text: string;
   voice_profile_id: string;
-  speed?: number;
-  preset?: 'ultra_fast' | 'fast' | 'standard' | 'high_quality';
+}
+
+export interface SynthesisUsage {
+  used: number;
+  limit: number;
+  remaining: number;
 }
 
 export interface SynthesisResponse {

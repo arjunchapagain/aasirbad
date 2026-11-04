@@ -42,7 +42,7 @@ def _publish(profile_id: str, progress: float, step: str, status: str = "trainin
             json.dumps({"progress": progress, "step": step, "status": status}),
         )
     except Exception:  # noqa: BLE001
-        pass
+        logger.debug("Redis unavailable; skipping realtime progress update")
 
 
 def _set_progress(db: Session, profile: VoiceProfile, progress: float, step: str) -> None:

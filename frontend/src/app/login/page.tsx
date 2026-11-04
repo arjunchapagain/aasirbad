@@ -39,12 +39,12 @@ export default function LoginPage() {
               <span className="text-white text-xl font-bold">ॐ</span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-2xl font-bold text-gray-900">आसिर्बाद</span>
+              <span className="text-2xl font-bold text-gray-900">Aasirbad</span>
               <span className="text-[10px] text-amber-700 font-medium -mt-0.5">AASIRBAD</span>
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">फेरि स्वागत छ</h1>
-          <p className="text-gray-600 mt-1">आफ्नो खातामा साइन इन गर्नुहोस्</p>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+          <p className="text-gray-600 mt-1">Sign in to your account</p>
         </div>
 
         <form
@@ -88,7 +88,7 @@ export default function LoginPage() {
             </div>
             <div className="mt-1.5 text-right">
               <Link href="/forgot-password" className="text-sm text-brand-600 hover:text-brand-700 font-medium">
-                पासवर्ड बिर्सनुभयो?
+                Forgot your password?
               </Link>
             </div>
           </div>

@@ -6,6 +6,7 @@ Next.js 14 frontend (`frontend/`) + FastAPI backend (`backend/`), Postgres, Redi
 - Backend tests: `cd backend && DB_BACKEND=sqlite pytest -q`
 - Migrations: `cd backend && alembic upgrade head` (must stay a SINGLE head: check `alembic heads`)
 - Frontend check: `cd frontend && npx tsc --noEmit && npm run build`
+- API e2e (needs running backend): `python scripts/e2e.py`; run guide: `docs/LOCAL.md`
 - Full check before commit: `scripts/check.sh` (also runs as git pre-commit hook; enable with `git config core.hooksPath .githooks`)
 
 ## Rules

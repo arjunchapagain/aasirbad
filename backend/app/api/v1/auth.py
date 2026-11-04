@@ -98,21 +98,27 @@ async def forgot_password(
 
     Always returns 200 to prevent email enumeration.
     If the email exists, a reset token is generated.
-    In production, this would send an email.
-    For now, the admin can use /auth/admin/reset.
+    Emails the link via SMTP when configured (see SMTP_* settings).
     """
     auth_service = AuthService(db)
     token = await auth_service.create_reset_token(body.email)
 
-    # In a real setup with SMTP configured, we'd email the link.
-    # For now, just log it so admin can retrieve from logs if needed.
     if token:
-        import logging
+        from app.services.email_service import send_email, smtp_configured
 
-        logging.getLogger(__name__).info(
-            "Password reset link: https://aasirbad.works/reset-password?token=%s",
-            token,
+        link = f"{settings.frontend_url}/reset-password?token={token}"
+        sent = await send_email(
+            body.email,
+            "Reset your Aasirbad password",
+            f"Use this link to reset your password (valid for 30 minutes):\n\n{link}\n\n"
+            "If you didn't request this, you can ignore this email.",
         )
+        # Dev convenience only: without SMTP, print the link to the server log.
+        # Never log live reset tokens in production.
+        if not sent and not smtp_configured() and settings.app_env != "production":
+            import logging
+
+            logging.getLogger(__name__).info("DEV password reset link: %s", link)
 
     # Always return same response to prevent email enumeration
     return {

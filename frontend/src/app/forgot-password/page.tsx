@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
     try {
       await auth.forgotPassword(email);
       setSent(true);
-      toast.success('रिसेट लिंक पठाइयो!');
+      toast.success('Reset link sent!');
     } catch {
       // Always show success to prevent email enumeration
       setSent(true);
@@ -37,12 +37,12 @@ export default function ForgotPasswordPage() {
               <span className="text-white text-xl font-bold">ॐ</span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-2xl font-bold text-gray-900">आसिर्बाद</span>
+              <span className="text-2xl font-bold text-gray-900">Aasirbad</span>
               <span className="text-[10px] text-amber-700 font-medium -mt-0.5">AASIRBAD</span>
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">पासवर्ड बिर्सनुभयो?</h1>
-          <p className="text-gray-600 mt-1">आफ्नो इमेल हाल्नुहोस्, हामी रिसेट लिंक पठाउँछौं</p>
+          <h1 className="text-2xl font-bold text-gray-900">Forgot your password?</h1>
+          <p className="text-gray-600 mt-1">Enter your email and we'll send you a reset link</p>
         </div>
 
         {sent ? (
@@ -50,20 +50,20 @@ export default function ForgotPasswordPage() {
             <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
               <Mail className="w-7 h-7 text-green-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">इमेल जाँच गर्नुहोस्</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Check your email</h2>
             <p className="text-gray-600 text-sm mb-6">
-              यदि <strong>{email}</strong> मा खाता छ भने, पासवर्ड रिसेट लिंक पठाइएको छ।
-              लिंक ३० मिनेटमा म्याद सकिन्छ।
+              If an account exists for <strong>{email}</strong>, a password reset link has been sent.
+              The link expires in 30 minutes.
             </p>
             <p className="text-gray-500 text-xs mb-4">
-              इमेल आएन? स्प्याम फोल्डर जाँच गर्नुहोस् वा admin लाई सम्पर्क गर्नुहोस्।
+              Didn't get it? Check your spam folder or contact an admin.
             </p>
             <Link
               href="/login"
               className="inline-flex items-center gap-1.5 text-brand-600 hover:text-brand-700 font-medium text-sm"
             >
               <ArrowLeft className="w-4 h-4" />
-              लगइनमा फर्कनुहोस्
+              Back to sign in
             </Link>
           </div>
         ) : (
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full bg-brand-600 text-white py-2.5 rounded-lg hover:bg-brand-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'पठाउँदै...' : 'रिसेट लिंक पठाउनुहोस्'}
+              {loading ? 'Sending...' : 'Send reset link'}
             </button>
           </form>
         )}
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
             className="inline-flex items-center gap-1.5 text-brand-600 hover:text-brand-700 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            लगइनमा फर्कनुहोस्
+            Back to sign in
           </Link>
         </p>
       </div>
