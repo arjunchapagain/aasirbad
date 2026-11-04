@@ -1,6 +1,6 @@
 # Aasirbad — voice cloning platform
 
-Next.js 14 frontend (`frontend/`) + FastAPI backend (`backend/`), Postgres, Redis/Celery. Deploy: Railway.
+Next.js 14 frontend (`frontend/`) + FastAPI backend (`backend/`), Postgres, Redis/Celery. Not deployed anywhere (local only); no deploy automation.
 
 ## Commands
 - Backend tests: `cd backend && DB_BACKEND=sqlite pytest -q`
