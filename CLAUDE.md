@@ -14,7 +14,7 @@ Next.js 14 frontend (`frontend/`) + FastAPI backend (`backend/`), Postgres, Redi
 - New migration = new file chained to the current head. Never edit applied migrations; never branch.
 - Secrets only via env vars (see `.env.example`). Never commit `.env*` with real values.
 - TTS runs through a hosted API behind `backend/app/voice_engine/` (no local GPU). Keep it behind one interface.
-- UI text lives in i18n message files, never hardcoded. Default language comes from user locale, user can override.
+- English only for now. Don't build i18n yet; keep UI strings easy to extract later (see `docs/PLAN.md` milestone 3, deferred).
 
 ## Working style (save tokens)
 - One feature per session/branch. State a 3-5 line plan, then implement.
